@@ -16,7 +16,7 @@ this should compile without warnings and create a binary in bin/<$arch>, which y
 
 ### Getting binaries
 
-So far I only compiled binaries for MacOS and 64 bit Linux, they can be found under `bin/<$arch>/`, in the future I plan to support more systems.
+So far I haven't compiled binaries, but when I do they will be found under `bin/<$arch>/`, in the future I plan to support more systems.
 
 ## Current work
 
