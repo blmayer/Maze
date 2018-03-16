@@ -1,7 +1,7 @@
 /*
  * ****************************************************************************
  *
- * PROJECT:     Servrian
+ * PROJECT:     Maze
  *
  * TITLE:       Auxiliary Functions
  *
@@ -135,70 +135,23 @@ char *mime_type(char *path) {
     return strdup(mime);
 }
 
-char *create_response(struct header req, int encrypted){
+char *create_request(struct header req, int encrypted){
     
-    /* Make the status line */
-    char *status_line;
-    switch(req.status){
-        case 200:
-            status_line = "HTTP/1.1 200 OK\r\n";
-            break;
-        case 400:
-            status_line = "HTTP/1.1 400 Bad Request\r\n";
-            break;
-        case 404:
-            status_line = "HTTP/1.1 404 Not Found\r\n";
-            break;
-        case 500:
-            status_line = "HTTP/1.1 500 Internal Server Error\r\n";
-            break;
-        case 501:
-            status_line = "HTTP/1.1 501 Not Implemented\r\n";
-            break;
-    }
-    
-    /* Now the server time line */
-    char date_line[38];
+    /* URL request line */
+    int req_size = strlen(req.type) + strlen(req.url) + 9; /* Includes end 0 */
+    char req_line[req_size];
 
-    /* Get the current time in the correct format */
-    struct tm *cur_time;                /* Obtain current time */
-    time_t now = time(NULL);
-    cur_time = gmtime(&now);
-    
-    /* Fri, 31 Dec 1999 23:59:59 GMT */
-    strftime(date_line, 38, "Date: %a, %d %b %Y %X %Z\r\n", cur_time);
-    
-    date_line[37] = 0;
+    /* Host line */
+    int host_size =  
 
-    /* Server identification */
-    char *server = "Server: Servrian (x86_64)\r\n";
+    /* Client identification */
+    char *user = "User-Agent: Maze/<VERSION> (x86_64)\r\n";
 
-    /* File mime-type, first check if we want that */
-    char *mime = mime_type(req.path);
-    
-    /* File length line, if we want */
-    char *con_len;
-    if(req.clen == 0) {
-        con_len = "";
-    } else {
-        int digits = log10(req.clen) + 1;        /* Number of digits */
-        char temp[19 + digits];
-        sprintf(temp, "Content-Length: %d\r\n", req.clen);
-        con_len = strdup(temp);
-    }
-    
     /* Connection line */
-    char *conn_type;
-    if(req.conn == NULL) {
-        conn_type = "";
-    } else {
-        char temp[14 + strlen(req.conn)];
-        sprintf(temp, "Connection: %s\r\n", req.conn);  /* The conn line */
-        conn_type = strdup(temp);
-    }
+    char *conn_type = "Keep-Alive";
 
     /* Now assemble they all into one string, first calculate the length */
-    int head_len = strlen(status_line) + strlen(date_line) + strlen(server);
+    int head_len = strlen(user);
     head_len += strlen(mime) + strlen(con_len) + strlen(conn_type) + 2;
     head_len += req.clen;
     

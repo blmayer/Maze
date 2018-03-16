@@ -10,29 +10,16 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <time.h>
 #include <math.h>
 #include <openssl/sha.h>
-#include "header.h" 
+#include "headers.h" 
 #include "transform.h"
-
-/* File operations definitions */
-
-int file_size(char *path);
-
-char *load_file(char *path);
-
-int write_log(char buff[512]);
 
 /* Header processing tools */
 
-char *get_token(char *source, char par[]);
-
-char *age_line();
-
 char *mime_type(char *ext);
 
-char *create_response(struct header req, int encrypted);
+unsigned char *create_request(struct header req, int encrypted);
 
 #endif
 
