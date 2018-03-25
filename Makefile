@@ -1,5 +1,5 @@
-# Make file for the Servrian project build. Here we have only four targets for
-# now: servrian and servrian.exe, that builds the executable for the correct
+# Make file for the Maze project build. Here we have only four targets for
+# now: maze and maze.exe, that builds the executable for the correct
 # operating system, clean that clears the object files for a new build, and
 # distclean, that clears also the binaries. Currently we are compiling some 
 # object files (.o) from header files (.h), which are then linked to create
@@ -8,10 +8,10 @@
 OBJS := $(patsubst src/%.c, obj/%.o, $(wildcard src/*.c))
 CFLAGS := -lm -lcrypto -I ./include
 ifeq ($(OS),Windows_NT)
-	TARGET = servrian.exe
+	TARGET = maze.exe
 	ARCH = Windows_NT
 else
-	TARGET = servrian
+	TARGET = maze
 	ARCH = $(shell uname -s)
 endif
 
