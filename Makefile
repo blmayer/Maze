@@ -5,7 +5,6 @@
 # object files (.o) from header files (.h), which are then linked to create
 # the final binary.
 
-OBJS := $(patsubst src/%.c, obj/%.o, $(wildcard src/*.c))
 CFLAGS := -lm -lcrypto -I ./include
 ifeq ($(OS),Windows_NT)
 	TARGET = maze.exe
@@ -16,7 +15,7 @@ else
 endif
 
 # link
-$(TARGET): $(OBJS)
+$(TARGET): obj/browser.o obj/getfn.o obj/auxfns.o obj/transform.o 
 	@if test ! -d bin/$(ARCH); then mkdir bin/$(ARCH); fi
 	@echo "Now objects will be linked."
 	$(CC) $^ $(CFLAGS) -o bin/$(ARCH)/$@
