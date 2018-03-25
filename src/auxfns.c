@@ -135,39 +135,48 @@ char *mime_type(char *path) {
     return strdup(mime);
 }
 
-char *create_request(struct header req, int encrypted){
+unsigned char *create_request(struct request req, int encrypted){
     
-    /* URL request line */
-    int req_size = strlen(req.type) + strlen(req.url) + 9; /* Includes end 0 */
-    char req_line[req_size];
+    /* URL request line, includes version, spaces and \r\n */
+    int header_size = strlen(req.type) + strlen(req.url) + 12;
 
-    /* Host line */
-    int host_size =  
-
-    /* Client identification */
-    char *user = "User-Agent: Maze/<VERSION> (x86_64)\r\n";
-
-    /* Connection line */
-    char *conn_type = "Keep-Alive";
-
-    /* Now assemble they all into one string, first calculate the length */
-    int head_len = strlen(user);
-    head_len += strlen(mime) + strlen(con_len) + strlen(conn_type) + 2;
-    head_len += req.clen;
-    
-    
-    /* The header string */
-    unsigned char head[head_len + req.clen];
-    sprintf(head, "%s%s%s%s", status_line, date_line, server, conn_type);
-    sprintf(head + strlen(head), "%s%s\r\n", mime, con_len);
-
-    /* The body of the response */
-    strcat(head, req.body);
-
+	/* Host, user agent and conn lines */
+	header_size += strlen(req.host) + strlen(req.user) + strlen(req.conn) + 6;
+	
+    /* Accept line */
+	header_size += strlen(req.cenc) + 2;
+	
+	/* And optional lines */
+	if(req.auth != NULL){
+		header_size += strlen(req.auth) + 17;
+	}
+	if(req.key != NULL){
+		header_size += strlen(req.key) + 7;
+	}
+	
+    /* The header string, +1 for the end zero and +2 for blank line */
+    unsigned char header[header_size + 46];
+	
+	/* Copy all parameters to it */
+    sprintf(header, "%s %s HTTP/%s\r\n", req.type, req.url, req.vers);
+    sprintf(header + strlen(header), "Host: %s\r\n", req.host);
+	sprintf(header + strlen(header), "User-Agent: %s\r\n", req.user);
+	sprintf(header + strlen(header), "Connection: %s\r\n", req.conn);
+	sprintf(header + strlen(header), "Accept: %s\r\n", req.cenc);
+	if(req.auth != NULL){
+		sprintf(header + strlen(header), "Authorization: %s\r\n", req.auth);
+	}
+	if(req.key != NULL){
+		sprintf(header + strlen(header), "Key: %s\r\n", req.key);
+	}
+	
     if(encrypted){
-        strcpy(head, encode(head));
+        strcpy(header, encode(header));
     }
 
-    return strdup(head);
+	/* Add blank line */
+	sprintf(header + strlen(header), "\r\n");
+	
+    return strdup(header);
 }
 
