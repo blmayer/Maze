@@ -1,6 +1,6 @@
 To contribute to this project just follow the steps below:
 
-1. Fork it (<https://github.com/bleemayer/serbrian/fork>)
+1. Fork it (<https://github.com/blmayer/maze/fork>)
 2. Create your feature branch (`git checkout -b feature/fooBar`)
 3. Commit your changes (`git commit -am 'Add some fooBar'`)
 4. Push to the branch (`git push origin feature/fooBar`)
