@@ -5,8 +5,8 @@
  *  holding the response information.
  */
 
-#ifndef HEADERS_H_INCLUDED
-#define HEADERS_H_INCLUDED
+#ifndef HEADERS_H
+#define HEADERS_H
 
 #define KEY "Ie70tGt3A2TYntzomlrdQqxlZjWm92AcRKcoOLflbMckfnN9oLUqK9zI0y4wDyJk"\
             "RFX4ECITyLGfnO2ZwVd0hcp0Yel6F6fuFIaoOIomyW3AXEICZWzV7br9eghUsCHx"\
@@ -19,23 +19,23 @@
 
 /* Our structure that contains the response's data */
 struct response {
+    int status;
     char *type;
     char *path;
-    int status;
     char *vers;
     char *conn;
     char *auth;
     char *key;
     char *cenc;
     int clen;
-    char *rest;
     char *body;
 };
 
 /* Our structure that contains the request's data */
-struct response {
+struct request {
     char *type;
     char *url;
+	char *vers;
     char *host;
     char *conn;
     char *user;
@@ -43,7 +43,6 @@ struct response {
     char *key;
     char *cenc;
     int clen;
-    char *rest;
     char *body;
 };
 
