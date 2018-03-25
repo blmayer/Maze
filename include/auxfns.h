@@ -19,7 +19,7 @@
 
 char *mime_type(char *ext);
 
-unsigned char *create_request(struct header req, int encrypted);
+unsigned char *create_request(struct request req, int encrypted);
 
 #endif
 
