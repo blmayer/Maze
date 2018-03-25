@@ -1,5 +1,5 @@
 /*
- *  This is the function that sends the file requested in a response, it takes
+ *  This is the function that sends a GET request of a file, it takes
  *  two arguments: the client's connection and the file requested in the GET
  *  message.
  */
@@ -10,11 +10,11 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-#include "header.h"
+#include "headers.h"
 #include "auxfns.h"
 
 /* Receives client's parameters and sends a file */
-int serve_get(int conn, struct header req, int encrypted);
+int send_get(int conn, struct request req, int encrypted);
 
 #endif
 
