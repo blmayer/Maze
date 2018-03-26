@@ -32,6 +32,7 @@
 #include <netdb.h>
 #include "headers.h"
 #include "getfn.h"
+#include "transform.h"
 
 int main(int argc, char *argv[]){
 
@@ -110,13 +111,9 @@ int main(int argc, char *argv[]){
     puts("\tReady to receive.");
     int pos = 0, buff_size = 1024;
     unsigned char *buffer = calloc(buff_size, 1);
-    unsigned char *dec_buffer = calloc(buff_size, 1);
 
     /* This is a loop that will read the data coming from our connection */
     while(read(conn, buffer + pos, 1) == 1){
-        
-        /* Decode while we read */
-        dec_buffer[pos] = (buffer[pos] - 1) ^ KEY[pos % 512];
         
         /* Increase pos by 1 to follow the buffer size */
         pos++;
@@ -130,16 +127,12 @@ int main(int argc, char *argv[]){
             puts("\t\tBuffer grew.");
             buff_size += 512;
             buffer = realloc(buffer, buff_size);
-            dec_buffer = realloc(dec_buffer, buff_size);
         }
     }
 	
 	puts(buffer);
-	puts(dec_buffer);
-	
 	free(buffer);
-	free(dec_buffer);
-	
+
 	close(conn);
 	close(tcp_server);
 	
