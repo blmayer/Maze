@@ -1,13 +1,13 @@
 /*
  * ****************************************************************************
  *
- * PROJECT:     Servrian
+ * PROJECT:     Maze
  *
  * TITLE:       Functions to encrypt and decrypt requests
  *
  * FUNCTION:    In order to create a more secure transmission all requests will
- *              be encripted to be sent and decrypted when received. Here we
- *              transalte characters using some method.
+ *              be encrypted to be sent and decrypted when received. Here we
+ *              translate characters using some method.
  *
  * AUTHOR:      Brian Mayer blmayer@icloud.com
  *
@@ -19,27 +19,28 @@
  */
 
 #include "transform.h"
+#include "key.h"
 
 unsigned char *encode(unsigned char *message){
 
     /* Get length of received message */
-    int n = strlen(message) + 1;        // Add the terminating zero place
+    int n = strlen(message) + 1;        /* Add the terminating zero place */
     int i = 0;
     unsigned char cipher[n];
     
     while(i < n){
-        cipher[i] = (message[i] ^ KEY[i % 512]) + 1;    // +1 to never get 0
+        cipher[i] = (message[i] ^ KEY[i % 512]) + 1;    /* +1 to never get 0 */
         i++;
     }
 
-    cipher[n] = 0;      // Add terminating zero
+    cipher[n] = 0;      /* Add terminating zero */
     return strdup(cipher);
 }
 
 unsigned char *decode(unsigned char *cipher){
 
     /* Get length of received message */
-    int n = strlen(cipher) + 1;        // Add the terminating zero place
+    int n = strlen(cipher) + 1;        /* Add the terminating zero place */
     int i = 0;
 
     unsigned char message[n];
@@ -49,8 +50,7 @@ unsigned char *decode(unsigned char *cipher){
         i++;
     }
 
-    message[n] = 0;      // Add terminating zero
+    message[n] = 0;      /* Add terminating zero */
 
     return strdup(message);
 }
-
