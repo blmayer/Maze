@@ -7,12 +7,12 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "headers.h"
+#include "key.h"
 
-// Encode a string
+/* Encode a string */
 unsigned char *encode(unsigned char *message);
 
-// Decode a string
+/* Decode a string */
 unsigned char *decode(unsigned char *cipher);
 
 #endif
