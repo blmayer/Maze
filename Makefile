@@ -5,13 +5,18 @@
 # object files (.o) from header files (.h), which are then linked to create
 # the final binary.
 
-CFLAGS := -lm -lcrypto -I ./include
 ifeq ($(OS),Windows_NT)
 	TARGET = maze.exe
 	ARCH = Windows_NT
-else
-	TARGET = maze
+else 
 	ARCH = $(shell uname -s)
+	ifeq ($(ARCH),Darwin)
+		CFLAGS = -I ./include -I /usr/local/opt/openssl/include
+		TARGET = maze
+	else
+		CFLAGS = -lm -lcrypto -I ./include
+		TARGET = maze
+	endif
 endif
 
 # link
