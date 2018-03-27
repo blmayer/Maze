@@ -4,5 +4,7 @@
 
 #ifndef KEY_H
 #define KEY_H
+#define KEY "blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#"
 
 #endif
+
