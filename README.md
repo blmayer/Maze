@@ -8,6 +8,14 @@ The main source file, *browser.c*, tries to estabilish a TCP connection, and mak
 
 ### Compiling
 
+#### Dependencies
+
+- openssl;
+- A C compiler; &
+- make.
+
+#### Build
+
 To compile this project clone this repository or download all files, change to the Maze directory and run the command:
 
 `make`
@@ -37,7 +45,7 @@ There are lots of things to do, the ones in my mind now are listed below.
 
 Created by: Brian Mayer - bleemayer@gmail.com	
 Inital commit: Mar, 14, 2018
-Distributed under The Unlicense. See ``UNLICENSE`` for more information.
+Distributed under The Unlicense. See ``LICENSE`` for more information.
 
 ## Contributing
 
