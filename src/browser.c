@@ -65,12 +65,13 @@ int main(int argc, char *argv[]){
 		return 0;
 	}
 
+	/* Loop on the returned result checking for an address */
 	while(connect(tcp_server, server -> ai_addr, server -> ai_addrlen) == -1){
 		server = server -> ai_next; 
 	}
 	
 	if(server == NULL){
-		puts("Could not connext.");
+		puts("Could not connect.");
 		return -1;
 	}
 
@@ -81,8 +82,14 @@ int main(int argc, char *argv[]){
 	req.type = "GET";
 	req.url = argv[1];
 	req.vers = "1.1";
-	req.host = server -> ai_canonname;
 	req.conn = "Keep-Alive";
+
+	if(server -> ai_canonname == NULL){
+		req.host = argv[1];
+	} else {
+		req.host = server -> ai_canonname;
+	}
+
 	
 	/* Send an encrypted GET request */
 	send_get(tcp_server, req, 0);
