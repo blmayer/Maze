@@ -32,9 +32,9 @@ int send_get(int conn, struct request req, int encrypted){
 	
 	/* Accept encoding */
 	req.cenc =  "*/*";
-	
+
     /* Create the head */
-    char *request = create_request(req, encrypted);
+    unsigned char *request = create_request(req, encrypted);
 
     /* Send the request */
     write(conn, request, strlen(request));
