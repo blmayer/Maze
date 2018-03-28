@@ -51,3 +51,13 @@ Distributed under The Unlicense. See ``LICENSE`` for more information.
 
 Check the *contributing* file for details, but, in advance, it is pretty intuitive and straightforward.
 
+## Notes
+
+### MacOS
+
+- Compiling on MacOS with the default C compiler, clang, may give warnings, but compilation finishes without errors;
+- You may need to specify the include path to the openssl library because it is, sometimes, in a different place.
+
+### Windows
+
+- Compiling on Windows with Cygwin does not give any warning, but at run time there are several stack traces, I will investigate that.
