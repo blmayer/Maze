@@ -21,23 +21,22 @@ else
 endif
 
 # set directories for search dependencies
-vpath %.h 	./include
-vpath %.c 	./src
-vpath %.o 	./obj
-vpath %.so 	./lib
+vpath %.h 	include
+vpath %.c 	src
+vpath %.so 	lib
 
 # link
-$(TARGET): browser.o getfn.o auxfns.o
+$(TARGET): obj/browser.o obj/getfn.o obj/auxfns.o
 	@if test ! -d bin/$(ARCH); then mkdir bin/$(ARCH); fi
 	@echo "Now objects will be linked."
 	$(CC) $^ $(CFLAGS) -o bin/$(ARCH)/$@ $(LFLAGS)
 	@echo "Done."
 
 # compile
-%.o: %.c
+obj/%.o: %.c
 	@if test ! -d obj; then mkdir obj; fi
 	@echo "Compiling $<..."
-	$(CC) $(CFLAGS) -c $< -o obj/$@
+	$(CC) $(CFLAGS) -c $< -o $@
 	
 # remove compilation products
 clean:
