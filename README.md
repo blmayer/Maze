@@ -11,6 +11,7 @@ The main source file, *browser.c*, tries to estabilish a TCP connection and make
 #### Dependencies
 
 - openssl;
+- libweb (see [Randomator](https://github.com/blmayer/Randomator));
 - A C compiler; &
 - make.
 
