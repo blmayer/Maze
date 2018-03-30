@@ -36,8 +36,14 @@
 int main(int argc, char *argv[]){
 
 	/* Get URL and port from command line */
-	if(argc < 3){
-		puts("Please enter a valid URL and port.");
+	char *port;
+	if(argc == 2){
+		puts("Using port 80.");
+		port = "80";
+	} else if(argc == 3){
+		port = argv[2];
+	} else {
+		puts("Please specify host and/or port.");
 		return -1;
 	}
 
@@ -50,7 +56,7 @@ int main(int argc, char *argv[]){
 	hints.ai_flags = 0;					/* For wildcard IP address */
 	hints.ai_protocol = 0; 				/* Any protocol */
 
-	int lookup = getaddrinfo(argv[1], argv[2], &hints, &server);
+	int lookup = getaddrinfo(argv[1], port, &hints, &server);
 	if(lookup != 0){
 		/* Get the host info */
 		puts("Unable to resolve host.");
