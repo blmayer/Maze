@@ -23,6 +23,7 @@ endif
 # set directories for search dependencies
 vpath %.h 	./include
 vpath %.c 	./src
+vpath %.o 	./obj
 vpath %.so 	./lib
 
 # link
