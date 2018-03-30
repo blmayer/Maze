@@ -30,8 +30,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <web.h>
 #include "getfn.h"
-#include "libweb.h"
 
 int main(int argc, char *argv[]){
 
@@ -88,9 +88,8 @@ int main(int argc, char *argv[]){
 	} else {
 		req.host = server -> ai_canonname;
 	}
-
 	
-	/* Send an encrypted GET request */
+	/* Send a not yet encrypted GET request */
 	send_get(tcp_server, req, 0);
 	
 	unsigned char *response = get_header(tcp_server);
@@ -101,3 +100,4 @@ int main(int argc, char *argv[]){
 	
 	return 0;
 }
+
