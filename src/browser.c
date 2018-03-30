@@ -1,9 +1,9 @@
 /*
  * ****************************************************************************
  *
- * PROJECT:	 Maze: A simple HTTP 1.1 web browser.
+ * PROJECT:	Maze: A simple HTTP 1.1 web browser.
  *
- * AUTHOR:	  Brian Mayer blmayer@icloud.com
+ * AUTHOR: 	Brian Mayer blmayer@icloud.com
  *
  * Copyright (C) 2018	Brian Lee Mayer
  *
@@ -30,9 +30,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#include "headers.h"
 #include "getfn.h"
-#include "transform.h"
+#include "libweb.h"
 
 int main(int argc, char *argv[]){
 
@@ -94,31 +93,9 @@ int main(int argc, char *argv[]){
 	/* Send an encrypted GET request */
 	send_get(tcp_server, req, 0);
 	
-	/* Initialize variables for reading the request */
-	puts("\tReady to receive.");
-	int pos = 0, buff_size = 1024;
-	unsigned char *buffer = calloc(buff_size, 1);
+	unsigned char *response = get_header(tcp_server);
 
-	/* This is a loop that will read the data coming from our connection */
-	while(read(tcp_server, buffer + pos, 1) == 1){
-		
-		/* Increase pos by 1 to follow the buffer size */
-		pos++;
-		
-		/* The only thing that can break our loop is a blank line */
-		if(strcmp(buffer + pos - 4, "\r\n\r\n") == 0){ 
-			break;
-		}
-		
-		if(pos == buff_size){
-			puts("\t\tBuffer grew.");
-			buff_size += 512;
-			buffer = realloc(buffer, buff_size);
-		}
-	}
-	
-	puts(buffer);
-	free(buffer);
+	puts(response);
 
 	close(tcp_server);
 	
