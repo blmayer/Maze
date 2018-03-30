@@ -10,8 +10,8 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-#include "headers.h"
 #include "auxfns.h"
+#include "libweb.h"
 
 /* Receives client's parameters and sends a file */
 int send_get(int conn, struct request req, int encrypted);

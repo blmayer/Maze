@@ -12,8 +12,7 @@
 #include <string.h>
 #include <math.h>
 #include <openssl/sha.h>
-#include "headers.h" 
-#include "transform.h"
+#include "libweb.h"
 
 /* Header processing tools */
 

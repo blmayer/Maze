@@ -10,7 +10,6 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-#include "header.h"
 #include "auxfns.h"
 
 /* Receives conection's parameters and server a header */

@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-#include "header.h"
 #include "auxfns.h"
 
 // This function responds to a POST request

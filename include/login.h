@@ -10,7 +10,6 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-#include "header.h"
 #include "auxfns.h"
 
 // Receives client's parameters and sends a file
