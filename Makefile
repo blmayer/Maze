@@ -14,16 +14,17 @@ else
 		CFLAGS = -I ./include -I /usr/local/opt/openssl/include
 		TARGET = maze
 	else
-		CFLAGS = -lm -lcrypto -I ./include
+		CFLAGS = -I ./include -I ../Randomator/include
+		LFLAGS = -L ../Randomator/lib -lm -lcrypto -lweb
 		TARGET = maze
 	endif
 endif
 
 # link
-$(TARGET): obj/browser.o obj/getfn.o obj/auxfns.o obj/transform.o 
+$(TARGET): obj/browser.o obj/getfn.o obj/auxfns.o ../Randomator/lib/libweb.so
 	@if test ! -d bin/$(ARCH); then mkdir bin/$(ARCH); fi
 	@echo "Now objects will be linked."
-	$(CC) $^ $(CFLAGS) -o bin/$(ARCH)/$@
+	$(CC) $^ $(CFLAGS) -o bin/$(ARCH)/$@ $(LFLAGS)
 	@echo "Done."
 
 # compile
