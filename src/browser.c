@@ -47,6 +47,14 @@ int main(int argc, char *argv[]){
 		return -1;
 	}
 
+	/* Address must not end with a / */
+	int addr_len = strlen(argv[1]) - 1;
+	if(strcmp(argv[1] + addr_len, "/") == 0){
+		/* Remove / */
+		argv[1][addr_len] = 0;
+	}
+
+	puts(argv[1]);
 	/* Lookup host name */
 	struct addrinfo hints = {0};
 	struct addrinfo *server;
@@ -86,7 +94,7 @@ int main(int argc, char *argv[]){
 	struct request req = {0};
 	req.type = "GET";
 	req.url = argv[1];
-	req.vers = "1.1";
+	req.vers = 1.1;
 	req.conn = "Keep-Alive";
 
 	if(server -> ai_canonname == NULL){
@@ -96,11 +104,16 @@ int main(int argc, char *argv[]){
 	}
 	
 	/* Send a not yet encrypted GET request */
-	send_get(tcp_server, req, 0);
+	send_get(tcp_server, req);
 	
 	unsigned char *response = get_header(tcp_server);
 
 	puts(response);
+
+	/* Populate the response struct */
+	struct response res = {0};
+
+	parse_response(response, &res);
 
 	close(tcp_server);
 	
