@@ -18,12 +18,13 @@
  * ****************************************************************************
  */
 
+#include <web.h>
 #include "getfn.h"
 
-int send_get(int conn, struct request req, int encrypted){
+int send_get(int conn, struct request req){
 
     /* Verify the connection and request version */
-    if(req.conn == NULL && strcmp(req.vers, "1.1") == 0){
+    if(req.conn == NULL && req.vers > 1){
         req.conn = "Keep-Alive";
     }
 
@@ -34,7 +35,7 @@ int send_get(int conn, struct request req, int encrypted){
 	req.cenc =  "*/*";
 
     /* Create the head */
-    unsigned char *request = create_request(req, encrypted);
+    unsigned char *request = create_req_header(req);
 
     /* Send the request */
     write(conn, request, strlen(request));
