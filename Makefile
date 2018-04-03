@@ -15,7 +15,7 @@ else
 	ifeq ($(ARCH),Darwin)
 		CFLAGS = -I ./include -I /usr/local/opt/openssl/include
 	else
-		CFLAGS = -I ./include -I ../Randomator/include
+		CFLAGS = -I ./include
 		LFLAGS = -lm -lcrypto -lweb
 	endif
 endif
