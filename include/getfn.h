@@ -14,7 +14,7 @@
 #include "auxfns.h"
 
 /* Receives client's parameters and sends a file */
-int send_get(int conn, struct request req, int encrypted);
+int send_get(int conn, struct request req);
 
 #endif
 
