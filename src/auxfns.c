@@ -84,22 +84,6 @@ int write_log(char *buff) {
 
 /* Header processing tools */
 
-char *get_token(char *source, char par[]) {
-    
-    /* Search for the parameter passed */
-    char *tag = strcasestr(source, par);
-    
-    /* Check if parameter exists in header */
-    if(tag == NULL) {
-        return NULL;
-    }
-    
-    char *token = strtok(tag + strlen(par), "\r\n");
-    
-    /* Duplicate the token found to not get lost with function */
-    return strdup(token);
-}
-
 char *mime_type(char *path) {
     
     char *mime;
@@ -141,50 +125,5 @@ char *mime_type(char *path) {
     
     /* Duplicate the token found to not get lost with function */
     return strdup(mime);
-}
-
-unsigned char *create_request(struct request req, int encrypted){
-    
-    /* URL request line, includes version, spaces and \r\n */
-    int header_size = strlen(req.type) + strlen(req.url) + 12;
-
-	/* Host, user agent and conn lines */
-	header_size += strlen(req.host) + strlen(req.user) + strlen(req.conn) + 6;
-	
-    /* Accept line */
-	header_size += strlen(req.cenc) + 2;
-	
-	/* And optional lines */
-	if(req.auth != NULL){
-		header_size += strlen(req.auth) + 17;
-	}
-	if(req.key != NULL){
-		header_size += strlen(req.key) + 7;
-	}
-	
-    /* The header string, +1 for the end zero and +2 for blank line */
-    unsigned char header[header_size + 46];
-	
-	/* Copy all parameters to it */
-    sprintf(header, "%s %s HTTP/%s\r\n", req.type, req.url, req.vers);
-    sprintf(header + strlen(header), "Host: %s\r\n", req.host);
-	sprintf(header + strlen(header), "User-Agent: %s\r\n", req.user);
-	sprintf(header + strlen(header), "Connection: %s\r\n", req.conn);
-	sprintf(header + strlen(header), "Accept: %s\r\n", req.cenc);
-	if(req.auth != NULL){
-		sprintf(header + strlen(header), "Authorization: %s\r\n", req.auth);
-	}
-	if(req.key != NULL){
-		sprintf(header + strlen(header), "Key: %s\r\n", req.key);
-	}
-	
-    if(encrypted){
-        strcpy(header, encode(header));
-    }
-
-	/* Add blank line */
-	sprintf(header + strlen(header), "\r\n");
-	
-    return strdup(header);
 }
 
