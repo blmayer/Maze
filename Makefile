@@ -14,9 +14,15 @@ else
 	TARGET = maze
 	ifeq ($(ARCH),Darwin)
 		CFLAGS = -I ./include -I /usr/local/opt/openssl/include
+		LFLAGS = -L /usr/local/lib
+		LIBDIR = /usr/local/lib
+		INCDIR = /usr/local/include
+		LFLAGS = -L /usr/local/lib -lweb -lm -lcrypto
 	else
 		CFLAGS = -I ./include
 		LFLAGS = -lm -lcrypto -lweb
+		LIBDIR = /usr/lib
+		INCDIR = /usr/include
 	endif
 endif
 
