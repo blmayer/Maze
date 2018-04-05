@@ -112,11 +112,26 @@ int main(int argc, char *argv[]){
 
 	/* Populate the response struct */
 	struct response res = {0};
-
 	parse_response(response, &res);
 
-	close(tcp_server);
-	
+	printf("clen %d\n", res.clen);
+
+	/* Read response's body */
+	if(res.status != 302 && res.clen == 0){
+		close(tcp_server);
+		return 0;
+	}
+
+	/* Allocate space for the body */
+	char body[res.clen + 1];
+
+	/* Read the content from the socket */
+	read(tcp_server, body, res.clen);
+
+	body[res.clen] = 0;
+
+	printf("Body:\n%s\n", body);
+
 	return 0;
 }
 
