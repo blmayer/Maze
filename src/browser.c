@@ -36,25 +36,45 @@
 int main(int argc, char *argv[]){
 
 	/* Get URL and port from command line */
-	char *port;
 	if(argc == 2){
 		puts("Using port 80.");
-		port = "80";
-	} else if(argc == 3){
-		port = argv[2];
+		argv[2] = "80";
+	} else if(argc > 3){
+		puts("Please specify host. Port is optional.");
+	}
+
+	/* ---- Parse the url entered to get host, path and parameters --------- */
+
+	char *proto, *domain, *path, *pars;
+	printf("arg: %s\n", argv[1]);
+	
+	/* Try to match cases http://domain... and //domain... in URL */
+	proto = strstr(argv[1], "//");
+	if(proto == NULL){
+		/* URL is like www.domain... or /file..., get everything */
+		domain = strtok(argv[1], "/");
+		path = strtok(NULL, "");
 	} else {
-		puts("Please specify host and/or port.");
+		/* Advance to next / to get the domain */
+		domain = strtok(proto + 2, "/");
+		path = strtok(NULL, ""); 				/* Get the path after the / */
+	}
+
+	/* Check if domain is not null */
+	if(domain == NULL){
+		puts("Could not find a domain to lookup, please enter a domain.");
 		return -1;
 	}
 
-	/* Address must not end with a / */
-	int addr_len = strlen(argv[1]) - 1;
-	if(strcmp(argv[1] + addr_len, "/") == 0){
-		/* Remove / */
-		argv[1][addr_len] = 0;
+	printf("proto is: %s\n", proto);
+	printf("domain is: %s\n", domain);
+	printf("path is: %s\n", path);
+
+	/* To get parameters look for a ? */
+	if(path == NULL){
+		path = "/";
 	}
 
-	puts(argv[1]);
 	/* Lookup host name */
 	struct addrinfo hints = {0};
 	struct addrinfo *server;
@@ -64,7 +84,7 @@ int main(int argc, char *argv[]){
 	hints.ai_flags = 0;					/* For wildcard IP address */
 	hints.ai_protocol = 0; 				/* Any protocol */
 
-	int lookup = getaddrinfo(argv[1], port, &hints, &server);
+	int lookup = getaddrinfo(domain, argv[2], &hints, &server);
 	if(lookup != 0){
 		/* Get the host info */
 		puts("Unable to resolve host.");
@@ -93,12 +113,12 @@ int main(int argc, char *argv[]){
 	/* Create a request structure */
 	struct request req = {0};
 	req.type = "GET";
-	req.url = argv[1];
+	req.url = path;
 	req.vers = 1.1;
 	req.conn = "Keep-Alive";
 
 	if(server -> ai_canonname == NULL){
-		req.host = argv[1];
+		req.host = domain;
 	} else {
 		req.host = server -> ai_canonname;
 	}
@@ -114,10 +134,9 @@ int main(int argc, char *argv[]){
 	struct response res = {0};
 	parse_response(response, &res);
 
-	printf("clen %d\n", res.clen);
-
 	/* Read response's body */
-	if(res.status != 302 && res.clen == 0){
+	if(res.clen == 0){
+		puts("No body to read, quiting...");
 		close(tcp_server);
 		return 0;
 	}
