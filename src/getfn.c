@@ -42,8 +42,6 @@ int send_get(int conn, struct request req){
     
     puts("\tGET request sent.\n");
     
-	puts(request);
-    
 	return 0;
 }
 
