@@ -33,6 +33,9 @@
 #include <web.h>
 #include "getfn.h"
 
+/* Global variables with default values */
+char *KEY = "blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#";
+
 int main(int argc, char *argv[]){
 
 	/* Get URL and port from command line */
