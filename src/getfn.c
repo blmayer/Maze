@@ -40,7 +40,7 @@ int send_get(int conn, struct request req){
     /* Send the request */
     write(conn, request, strlen(request));
     
-    puts("\tGET request sent.\n");
+    puts("\tGET request sent.");
     
 	return 0;
 }
