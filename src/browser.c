@@ -64,16 +64,22 @@ int main(int argc, char *argv[]){
 		proto = NULL;
 	}
 
+	printf("proto is: %s\n", proto);
+
 	/* TODO Pass only one time over the url string */
 	/* Now we find the domain */
 	if(proto == NULL){
 		/* URL is like www.domain... or /file..., get everything */
-		strncpy(domain, argv[1], strcspn(argv[1], "/"));
+		domain = strtok(argv[1], "/");
+		printf("domain is: %s\n", domain);
+		path = strtok(NULL, "/");
 	} else {
 		/* Try to match cases http://domain... and //domain... in URL */
 		domain = strtok(argv[1] + strlen(proto) + 3, "/");
 	}
 	
+	printf("domain is: %s\n", domain);
+
 	/* Check if domain is not null */
 	if(domain == NULL){
 		puts("Could not find a domain to lookup, please enter a domain.");
@@ -93,8 +99,6 @@ int main(int argc, char *argv[]){
 		}
 	}
 
-	printf("proto is: %s\n", proto);
-	printf("domain is: %s\n", domain);
 	printf("path is: %s\n", path);
 	printf("pars is: %s\n", pars);
 
@@ -159,48 +163,26 @@ int main(int argc, char *argv[]){
 
 	/* ---- Read response's body ------------------------------------------- */
 
-	/* Allocate space for the body */
-	unsigned char *body = NULL;
-
 	/* The transfer may be normal */
 	if(res.clen > 0){
-		/* Allocate the correct size */
-		body = realloc(body, res.clen + 1);
+		puts("Direct.");
+		
+		/* Allocate space for the body */
+		unsigned char body[res.clen + 1];
 		
 		/* Read the content from the socket */
 		read(server, body, res.clen);
+		body[res.clen] = 0;
+		printf("Body:\n%s\n", body);
 	}
 
 	/* Or may be chunked */
-	if(strcmp(res.ttype, "chunked") == 0){
+	if(res.ttype != NULL && strcmp(res.ttype, "chunked") == 0){
 		/* Here we read and update the body */
-		unsigned char *chunk;
-		int chunk_size; 				/* The size to be read */
-		int body_size = 0; 				/* This space is for the end 0 */
-	
-get_chunk:
-		puts("\tReceiving chunked data...");
-		chunk = read_chunk(server);
-		sscanf(chunk, "%x", &chunk_size); 
+		unsigned char *body = read_chunks(server);
 		
-		if(chunk_size > 0){
-			/* Allocate the size needed and read */
-			body = realloc(body, body_size + chunk_size);
-			
-			/* Now read the whole chunk, be sure */
-			int got = 0;
-			while(got < chunk_size){
-				got += read(server, body + body_size + got, chunk_size - got);
-			}
-			
-			body_size += chunk_size;
-			read(server, chunk, 2); 	/* This will discard a \r\n */
-			goto get_chunk;
-		}
+		printf("Body:\n%s\n", body);
 	}
-
-	printf("Body:\n%s\n", body);
-	free(body);
 
 	/* Body read, close the connection */
 	close(server);
