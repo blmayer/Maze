@@ -48,59 +48,9 @@ int main(int argc, char *argv[]){
 
 	/* ---- Parse the url entered to get host, path and parameters --------- */
 
-	char *proto, *domain, *path, *pars;
-	
-	/* First five bytes gives you the protocol */
-	switch(strncmp(argv[1], "http:", 5)){
-	case 0:
-		proto = "http";
-		break;
+	struct url url = {0};
 
-	case 57:
-		proto = "https";
-		break;
-	
-	default:
-		proto = NULL;
-	}
-
-	printf("proto is: %s\n", proto);
-
-	/* TODO Pass only one time over the url string */
-	/* Now we find the domain */
-	if(proto == NULL){
-		/* URL is like www.domain... or /file..., get everything */
-		domain = strtok(argv[1], "/");
-		printf("domain is: %s\n", domain);
-		path = strtok(NULL, "/");
-	} else {
-		/* Try to match cases http://domain... and //domain... in URL */
-		domain = strtok(argv[1] + strlen(proto) + 3, "/");
-	}
-	
-	printf("domain is: %s\n", domain);
-
-	/* Check if domain is not null */
-	if(domain == NULL){
-		puts("Could not find a domain to lookup, please enter a domain.");
-		return -1;
-	}
-	
-	/* Now get the path */
-	path = strtok(NULL, "");
-	if(path == NULL){
-		path = "/";
-		pars = NULL;
-	} else {
-		pars = strchr(path, '?'); 		/* It is easier to find pars first */
-		path = strchr(path, '/'); 		/* Get the path after the / */
-		if(path == NULL){
-			path = "/";
-		}
-	}
-
-	printf("path is: %s\n", path);
-	printf("pars is: %s\n", pars);
+	parse_URL(argv[1], &url);
 
 	/* Lookup host name */
 	struct addrinfo hints = {0};
@@ -111,7 +61,7 @@ int main(int argc, char *argv[]){
 	hints.ai_flags = 0;					/* For wildcard IP address */
 	hints.ai_protocol = 0; 				/* Any protocol */
 
-	int lookup = getaddrinfo(domain, argv[2], &hints, &host);
+	int lookup = getaddrinfo(url.domain, argv[2], &hints, &host);
 	if(lookup != 0){
 		/* Get the host info */
 		puts("Unable to resolve host.");
@@ -143,12 +93,12 @@ int main(int argc, char *argv[]){
 	/* Create a request structure */
 	struct request req = {0};
 	req.type = "GET";
-	req.url = path;
+	req.url = url.path;
 	req.vers = 1.1;
 	req.conn = "Keep-Alive";
 
 	if(host -> ai_canonname == NULL){
-		req.host = domain;
+		req.host = url.domain;
 	} else {
 		req.host = host -> ai_canonname;
 	}
