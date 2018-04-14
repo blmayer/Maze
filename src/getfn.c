@@ -25,7 +25,7 @@ int send_get(int conn, struct request req){
 
     /* Verify the connection and request version */
     if(req.conn == NULL && req.vers > 1){
-        req.conn = "Keep-Alive";
+    	req.conn = "Keep-Alive";
     }
 
 	/* Client identification */
@@ -36,6 +36,8 @@ int send_get(int conn, struct request req){
 
     /* Create the head */
     unsigned char *request = create_req_header(req);
+
+	printf("request:\n%s\n", request);
 
     /* Send the request */
     write(conn, request, strlen(request));
