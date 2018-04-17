@@ -34,7 +34,7 @@
 #include "getfn.h"
 
 /* Global variables with default values */
-char *KEY = "blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#blmayer#";
+char *KEY = "<KEY>";
 
 int main(int argc, char *argv[]){
 
