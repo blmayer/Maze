@@ -4,6 +4,8 @@
 # distclean, that clears also the binaries. Currently we are compiling some 
 # object files (.o) from header files (.h), which are then linked to create
 # the final binary.
+SHELL := /bin/bash
+OBJS := obj/browser.o obj/getfn.o
 
 # do some system checks
 ifeq ($(OS),Windows_NT)
@@ -13,13 +15,13 @@ else
 	ARCH = $(shell uname -s)
 	TARGET = maze
 	ifeq ($(ARCH),Darwin)
-		CFLAGS = -I ./include -I /usr/local/opt/openssl/include
+		CFLAGS = -Wall -I ./include -I /usr/local/opt/openssl/include
 		LFLAGS = -L /usr/local/lib
 		LIBDIR = /usr/local/lib
 		INCDIR = /usr/local/include
 		LFLAGS = -L /usr/local/lib -lweb -lm -lcrypto
 	else
-		CFLAGS = -I ./include
+		CFLAGS = -Wall -I ./include
 		LFLAGS = -lm -lcrypto -lweb
 		LIBDIR = /usr/lib
 		INCDIR = /usr/include
@@ -31,8 +33,11 @@ vpath %.h 	include
 vpath %.c 	src
 vpath %.so 	lib
 
+# targets
+.PHONY: $(TARGET) clean distclean
+
 # link
-$(TARGET): obj/browser.o obj/getfn.o obj/auxfns.o
+$(TARGET): $(OBJS)
 	@if test ! -d bin/$(ARCH); then mkdir bin/$(ARCH); fi
 	@echo "Now objects will be linked."
 	$(CC) $^ $(CFLAGS) -o bin/$(ARCH)/$@ $(LFLAGS)
