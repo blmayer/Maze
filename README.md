@@ -29,24 +29,22 @@ So far binaries have not been compiled, but when they are done they will be foun
 
 ## Current work
 
-- Initial build; &
-- Receive the response of a get request.
+- Creating a graphical interface.
 
 ## To-do
 
 There are lots of things to do, the ones in my mind now are listed below.
 
 - Support PUT, DELETE and UPDATE requests (I don't know what for);
-- Support chunked transfer encoding;
-- Support complete path on requests;
-- Use encryption for loged in users; &
+- Support wide characters;
+- Use encryption for logged in users; &
 - Pipe logging.
 
 ## Meta
 
 Created by: Brian Mayer - bleemayer@gmail.com	
 Inital commit: Mar, 14, 2018
-Distributed under The Unlicense. See ``LICENSE`` for more information.
+Distributed under The GNU GPL v2. See [LICENSE] for more information.
 
 ## Contributing
 
