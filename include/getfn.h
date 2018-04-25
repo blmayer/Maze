@@ -11,7 +11,6 @@
 #include <unistd.h>
 #include <string.h>
 #include <web.h>
-#include "auxfns.h"
 
 /* Receives client's parameters and sends a file */
 int send_get(int conn, struct request req);
