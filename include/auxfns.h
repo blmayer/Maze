@@ -1,0 +1,22 @@
+/*
+ *  Here we have auxiliary functions intended to be used by other functions.
+ */
+
+#ifndef AUXFNS_H
+#define AUXFNS_H
+
+#define _GNU_SOURCE
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <math.h>
+#include <openssl/sha.h>
+#include <web.h>
+
+/* Header processing tools */
+
+char *mime_type(char *ext);
+
+#endif
+
