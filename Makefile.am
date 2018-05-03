@@ -1,2 +1,2 @@
-SUBDIRS = src/randomazer src/webng src/browser
+SUBDIRS = src/randomazer src/webng src/browser src/server
 

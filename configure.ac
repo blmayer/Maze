@@ -21,7 +21,8 @@ AC_CHECK_FUNCS([socket])
 AC_CONFIG_FILES([Makefile
 		 src/randomazer/Makefile
 		 src/webng/Makefile
-		 src/browser/Makefile])
+		 src/browser/Makefile
+		 src/server/Makefile])
 
 AC_OUTPUT
 
