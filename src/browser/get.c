@@ -18,8 +18,7 @@
  * ****************************************************************************
  */
 
-#include <web.h>
-#include "getfn.h"
+#include "get.h"
 
 int send_get(int conn, struct request req){
 

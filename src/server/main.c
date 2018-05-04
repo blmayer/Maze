@@ -30,13 +30,12 @@
 #include <sys/wait.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include "receivefn.h"
+#include "receive.h"
 
 /* Global variables with default values */
 int PORT = 5000;
 unsigned char *PATH = "webpages";
 unsigned char *KEY = "$KEY";
-unsigned char *VERSION = "Servrian/$VER (x86_64)";
 
 /* Opens a TCP socket at the desired port and lintens to connections */
 int main(int argc, char *argv[]){

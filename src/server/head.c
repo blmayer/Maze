@@ -26,12 +26,12 @@
  * ****************************************************************************
  */
 
-#include "headfn.h"
+#include "head.h"
 
 int serve_head(unsigned int conn, struct response res) {
 	
 	/* Create the status variable */
-	int *status = 200;
+	int *status;
 	
 	/* Get the page file's size */
 	int *page_size = 0;

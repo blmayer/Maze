@@ -22,7 +22,7 @@
  * ****************************************************************************
  */
 
-#include "auxfns.h"
+#include "aux.h"
 
 /* File operations definitions */
 

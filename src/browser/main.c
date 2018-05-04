@@ -30,8 +30,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#include <web.h>
-#include "getfn.h"
+#include <webng.h>
+#include "get.h"
 
 /* Global variables with default values */
 char *KEY = "<KEY>";

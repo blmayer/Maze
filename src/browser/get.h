@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-#include <web.h>
+#include <webng.h>
 
 /* Receives client's parameters and sends a file */
 int send_get(int conn, struct request req);

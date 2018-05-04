@@ -11,15 +11,14 @@
 
 #include <sys/socket.h>
 #include <unistd.h>
-#include <web.h>
-#include "headfn.h"
-#include "getfn.h"
-#include "postfn.h"
+#include <webng.h>
+#include "head.h"
+#include "get.h"
+#include "post.h"
 
 /* Global variables from server.c (path to the webpages folder and key) */
 extern unsigned char *PATH;
 extern unsigned char *KEY;
-extern unsigned char *VERSION;
 
 /* This function reads tne header and passes it to the right function */
 int send_response(unsigned int cli_conn);

@@ -22,7 +22,7 @@
  * ****************************************************************************
  */
 
-#include "getfn.h"
+#include "get.h"
 #include "login.h"
 
 int serve_get(unsigned int conn, struct response res){

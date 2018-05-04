@@ -18,7 +18,7 @@
  * ****************************************************************************
  */
 
-#include "postfn.h"
+#include "post.h"
 #include "login.h"
 
 int handle_post(unsigned int conn, struct response res){

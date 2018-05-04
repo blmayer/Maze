@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-#include <web.h>
+#include <webng.h>
 
 /* Declare external variables */
 extern unsigned char *PATH;

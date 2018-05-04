@@ -10,8 +10,8 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-#include <web.h>
-#include "auxfns.h"
+#include <webng.h>
+#include "aux.h"
 
 /* Receives connection's parameters and server a header */
 int serve_head(unsigned int conn, struct response res);

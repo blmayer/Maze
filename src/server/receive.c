@@ -24,8 +24,7 @@
  * ****************************************************************************
  */
 
-#include <web.h>
-#include "receivefn.h"
+#include "receive.h"
 
 int send_response(unsigned int cli_conn){
 	

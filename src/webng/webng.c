@@ -30,7 +30,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <web.h>
+#include <webng.h>
 
 unsigned char *read_chunks(int conn){
 

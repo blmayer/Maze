@@ -11,8 +11,8 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-#include <web.h>
-#include "auxfns.h"
+#include <webng.h>
+#include "aux.h"
 
 /* This function responds to a POST request */
 int handle_post(unsigned int conn, struct response res);
