@@ -19,7 +19,7 @@ AC_CHECK_HEADERS([arpa/inet.h netdb.h string.h sys/socket.h unistd.h])
 AC_CHECK_FUNCS([socket])
 
 AC_CONFIG_FILES([Makefile
-		 src/randomazer/Makefile
+		 src/randomstr/Makefile
 		 src/webng/Makefile
 		 src/browser/Makefile
 		 src/server/Makefile])
