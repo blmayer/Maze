@@ -35,9 +35,8 @@
 /* Global variables with default values */
 int PORT = 5000;
 unsigned char *PATH = "webpages";
-unsigned char *KEY = "$KEY";
 
-/* Opens a TCP socket at the desired port and lintens to connections */
+/* Opens a TCP socket at the desired port and listens to connections */
 int main(int argc, char *argv[]){
 
 	/* ---- Parsing command line argument ------------------------------ */
@@ -55,19 +54,19 @@ int main(int argc, char *argv[]){
 		case 59:
 		case -16:
 			/* This is the help, print help and quit */
-			puts("Servrian/ (x86_64): A simple and encrypted"
+			puts("Servrian/" VERSION ": A simple and encrypted"
 			     " web server.\n\n"
 			     "usage: servrian [--help] [-h] [--port port]"
 			     " [-p port] [--dir path] [-d path]\n\n"
-			     " -h	 	: display this help message\n"
-			     " --help	  	: same as -h\n"
-			     " -p port	 	: use 'port' as the listening"
+			     " -h: 	display this help message\n"
+			     " --help: 	same as -h\n"
+			     " -p port:	use 'port' as the listening"
 			     " port, default 5000\n"
-			     " --port port : same as -p\n"
-			     " -d path	 	: set 'path' to be the root"
+			     " --port port:	same as -p\n"
+			     " -d path:	set 'path' to be the root"
 			     " folder where your web content is located,"
 			     " default ./webpages/\n"
-			     " --dir path 	: same as -d\n");
+			     " --dir path:	same as -d\n");
 			return 0;
 			
 		case 67:
@@ -107,30 +106,30 @@ int main(int argc, char *argv[]){
 		sprintf(temp, "%s/", PATH);
 		PATH = strdup(temp);
 	}
+	printf("Using path: %s\n", PATH);
 
 	/* Check if some files exist */
 	unsigned char file_path[strlen(PATH) + 9];
 	sprintf(file_path, "%s404.html", PATH); 
 	if(fopen(file_path, "r") == NULL){
-		puts("404 page not found in path.");
+		printf("File %s not found.\n", file_path);
 		return -1;
 	}
 	sprintf(file_path, "%s403.html", PATH); 
 	if(fopen(file_path, "r") == NULL){
-		puts("403 page not found in path.");
+		printf("File %s not found.\n", file_path);
 		return -1;
 	}
 	sprintf(file_path, "%s500.html", PATH); 
 	if(fopen(file_path, "r") == NULL){
-		puts("500 page not found in path.");
+		printf("File %s not found.\n", file_path);
 		return -1;
 	}
 	sprintf(file_path, "%s501.html", PATH); 
 	if(fopen(file_path, "r") == NULL){
-		puts("501 page not found in path.");
+		printf("File %s not found.\n", file_path);
 		return -1;
 	}
-	printf("Using path %s\n", PATH);
 
 	/* ---- Opening a socket ------------------------------------------- */
 
@@ -166,7 +165,7 @@ int main(int argc, char *argv[]){
 
 	/* Now we listen */
 	listen(server, 1);
-	printf("Server is receiving on port %d.\n", PORT);
+	printf("Server is listening on port %d.\n", PORT);
 	
 	while(1){
 		puts("Server is waiting for connections.");

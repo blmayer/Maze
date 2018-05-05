@@ -62,7 +62,7 @@ int send_response(unsigned int cli_conn){
 	res.type = req.type;
 	res.path = req.url;
 	res.vers = req.vers;
-	res.serv = VERSION;
+	res.serv = "Servrian-" VERSION;
 
 	/* Optional parameters, doesn't know how to handle this nicely */
 	if(req.auth == NULL){

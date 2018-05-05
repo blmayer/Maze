@@ -33,9 +33,6 @@
 #include <webng.h>
 #include "get.h"
 
-/* Global variables with default values */
-char *KEY = "<KEY>";
-
 int main(int argc, char *argv[]){
 
 	/* Get URL and port from command line */
