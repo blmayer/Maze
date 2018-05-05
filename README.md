@@ -1,17 +1,16 @@
 # Maze
 
->A small and simple web browser written in C. This B2B (Beginner to Beginner) application aims at helping students to learn how clients and servers interact since the creator has insufficient knowledge of C programming. Although simplicity is the main feature of Maze, we plan to make it RFC 2616 compliant and as complete as possible.
+>Maze is a project of creating tools for a safer web, it brings a web browser and a web server written in C. These B2B (Beginner to Beginner) applications aims at helping students to learn how clients and servers interact since the creator has insufficient knowledge of C programming. Although simplicity is the main feature of Maze, we plan to make it RFC 2616 compliant and as complete as possible.
 
 ## The way it works, or tries to
 
-The main source file, *browser.c*, tries to estabilish a TCP connection and makes a HTTP request to an URL. Each connection will be a different process (a tab in the browser), so we can handle multiple tabs simultaneously. This request is handled by a function defined in the file *reqfunc.h* that writes, interprets requests, and passes its attributes to a specific function, which generates a response for that.
+The main source files, are located in *src/**, there are some utilities that must be built together.
 
 ### Compiling
 
 #### Dependencies
 
 - openssl;
-- libweb (see [Randomator](https://github.com/blmayer/Randomator));
 - A C compiler; &
 - make.
 
@@ -21,7 +20,7 @@ To compile this project clone this repository or download all files, change to t
 
 `make`
 
-this should compile without warnings and create a binary in bin/<$arch>, which you can then execute with `./bin/<$arch>/maze`. I recommend that you use the C compiler that ships with Xcode or with GCC, make sure to use C version 99. On MacOS you can install the GCC version with [Homebrew](https://brew.sh/). It compiles on MacOS 10.12.6 with both compilers and on an 64 bit linux.
+this should compile without warnings and create some binaris in src/program/, which you can then execute with `./src/program/program`. I recommend that you use the C compiler that ships with Xcode or with GCC, make sure to use C version 99. On MacOS you can install the GCC version with [Homebrew](https://brew.sh/). It compiles on MacOS 10.12.6 with both compilers and on an 64 bit linux.
 
 ### Getting binaries
 
