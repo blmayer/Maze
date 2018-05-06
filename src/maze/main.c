@@ -36,30 +36,28 @@
 int main(int argc, char *argv[]){
 
 	/* Get URL and port from command line */
-	if(argc == 2){
-		puts("Using port 80.");
-		argv[2] = "80";
-	} else if(argc > 3){
-		puts("Please specify host. Port is optional.");
+	if(argc != 2)
+	{
+		puts("Please input exactly one parameter");
 	}
 
-	/* ---- Parse the url entered to get host, path and parameters --------- */
+	/* ---- Parse the url entered to get host, path and parameters ----- */
 
 	struct url url = {0};
-
 	parse_URL(argv[1], &url);
 
 	/* Lookup host name */
 	struct addrinfo hints = {0};
 	struct addrinfo *host;
 
-	hints.ai_family = AF_INET;			/* Allow IPv4 or IPv6 */
+	hints.ai_family = AF_INET;		/* Allow IPv4 or IPv6 */
 	hints.ai_socktype = SOCK_STREAM; 	/* TCP socket */
-	hints.ai_flags = 0;					/* For wildcard IP address */
-	hints.ai_protocol = 0; 				/* Any protocol */
+	hints.ai_flags = 0;			/* For wildcard IP address */
+	hints.ai_protocol = 0; 			/* Any protocol */
 
-	int lookup = getaddrinfo(url.domain, argv[2], &hints, &host);
-	if(lookup != 0){
+	int lookup = getaddrinfo(url.domain, url.port, &hints, &host);
+	if(lookup != 0)
+	{
 		/* Get the host info */
 		puts("Unable to resolve host.");
 		return -1;
@@ -67,17 +65,20 @@ int main(int argc, char *argv[]){
 
 	/* Open a socket */
 	int server = socket(AF_INET, SOCK_STREAM, 0);
-	if(server < 0){
+	if(server < 0)
+	{
 		perror("Socket creation failed");
 		return 0;
 	}
 
 	/* Loop on the returned result checking for an address */
-	while(connect(server, host -> ai_addr, host -> ai_addrlen) == -1){
+	while(connect(server, host -> ai_addr, host -> ai_addrlen) == -1)
+	{
 		host = host -> ai_next; 
 	}
 	
-	if(host == NULL){
+	if(host == NULL)
+	{
 		puts("Could not connect.");
 		return -1;
 	}
@@ -93,27 +94,30 @@ int main(int argc, char *argv[]){
 	req.url = url.path;
 	req.vers = 1.1;
 	req.conn = "Keep-Alive";
+	req.key = KEY;
 
-	if(host -> ai_canonname == NULL){
+	if(host -> ai_canonname == NULL)
+	{
 		req.host = url.domain;
-	} else {
+	} 
+	else
+	{
 		req.host = host -> ai_canonname;
 	}
 	
 	/* Send a not yet encrypted GET request */
 	send_get(server, req);
 	
+	/* ---- Read response's body --------------------------------------- */
+
 	/* Populate the response struct */
 	unsigned char *response = get_header(server);
 	struct response res = {0};
 	parse_response(response, &res);
 
-	/* ---- Read response's body ------------------------------------------- */
-
 	/* The transfer may be normal */
-	if(res.clen > 0){
-		puts("Direct.");
-		
+	if(res.clen > 0)
+	{
 		/* Allocate space for the body */
 		unsigned char body[res.clen + 1];
 		
@@ -124,7 +128,8 @@ int main(int argc, char *argv[]){
 	}
 
 	/* Or may be chunked */
-	if(res.ttype != NULL && strcmp(res.ttype, "chunked") == 0){
+	if(res.ttype != NULL && strcmp(res.ttype, "chunked") == 0)
+	{
 		/* Here we read and update the body */
 		unsigned char *body = read_chunks(server);
 		
