@@ -10,7 +10,6 @@ else
 endif
 
 libwebng.$(EXT): $(patsubst %.c, %.o, $(wildcard *.c))
-	echo $(ARCH)
 	$(CC) $^ -o $@ $(LDFLAGS)
 
 %.o: %.c %.h
