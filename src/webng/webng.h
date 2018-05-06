@@ -50,6 +50,7 @@ struct request {
 struct url {
 	unsigned char *proto;
 	unsigned char *ip;
+	unsigned char *port;
 	unsigned char *domain;
 	unsigned char *path;
 	unsigned char *pars;
