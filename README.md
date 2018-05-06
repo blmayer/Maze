@@ -29,23 +29,23 @@ Run `make install` with root privileges, it will install under */usr/local/*.
 - A C compiler; &
 - make.
 
-## Subprojects
+# Subprojects
 
-### Servrian
+## Servrian
 
 Servrian is a small and simple HTTP 1.1 server.
 
-#### The way it works, or tries to
+### The way it works, or tries to
 
 The main source file, [main.c](src/servrian/main.c), opens a TCP socket at port 5000, or at a specified one, and stays listening for incoming connections. Once one connection is made it is forked and the request is processed in parallel by one of the functions defined in separate header files, this means the socket will stay listening to new connections while other processes respond. This request is handled by a function defined in the file [receive.c](src/servrian/receive.c) that reads and interprets the header of the request, passing its attributes to the specific function, which generates a response for that. It has functions in separate files for modularity: [get.c](src/servrian/get.c), [head.c](src/servrian/head.c) and [post.c](src/servrian/post.c)
 
-#### Compiling
+### Compiling
 
 To compile this project clone this repository or download all files, change to the Maze directory and run the command:
 
 `make servrian`
 
-#### Running Servrian
+### Running Servrian
 
 You can pass some parameters in the command line to configure Servrian, they are:
 
@@ -53,23 +53,43 @@ You can pass some parameters in the command line to configure Servrian, they are
 - `-p` or `--port` : specify the port to listen, default 5000;
 - `-d` or `--dir` : use as path to the webpages dir, default `./webpages/`.
 
-### Maze 
+Before opening the port Servrian will check if there are files named *404.html*, *500.html*, *501.html* and *503.html* under the path passed with `-d` or `--dir` parameter, or under *./webpages*, the default. So make sure these files are present.
+
+## Maze
 
 Maze tries to browse the web in a faster and safer manner.
 
 ### The way it works, or tries to
 
-The main source files, are located in *src/\**, there are some utilities that must be built together.
+The main source files, are located in _src/*_, there are some utilities that must be built together. It resembles Servrian in a certain way, it's modular: we have separated files for each HTTP request, for now, [get.c](src/maze/get.c).
 
-#### Compiling
+### Compiling
 
 To compile this project clone this repository or download all files, change to the Maze directory and run the command:
 
-`make servrian`
+`make maze`
 
-#### Running Maze
+### Running Maze
 
 Type `maze <website>` in your commandline, eg. `maze www.google.com`. 
+
+## libwebng
+
+Auxiliary shared library for encrypting and decrypting requests, parsing URLs, requests and responses &c. To discover what it provides please inspect the file [src/webng/webng.h](src/webng/webng.h).
+
+### Compiling
+
+Simply run make libs.
+
+### Linking it against your programs
+
+After installed just follow the conventional way, add `-lwebng` to your linker flags.
+
+# Meta
+
+Created by: Brian Mayer - bleemayer@gmail.com	
+Inital commit: Mar, 14, 2018
+Distributed under The GNU GPL v2. See [LICENSE](docs/LICENSE) for more information.
 
 ## Current work
 
@@ -83,12 +103,6 @@ There are lots of things to do, the ones in my mind now are listed below.
 - Support wide characters;
 - Use encryption for logged in users; &
 - Pipe logging.
-
-## Meta
-
-Created by: Brian Mayer - bleemayer@gmail.com	
-Inital commit: Mar, 14, 2018
-Distributed under The GNU GPL v2. See [LICENSE] for more information.
 
 ## Contributing
 
