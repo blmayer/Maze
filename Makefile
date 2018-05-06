@@ -11,7 +11,7 @@ else
 endif
 
 # Targets
-.PHONY: all install clean randomstr webng servrian maze
+.PHONY: all tests install clean randomstr webng servrian maze
 
 all: randomstr webng maze servrian 
 
@@ -36,6 +36,9 @@ install:
 	cp src/webng/webng.h /usr/local/include
 	cp src/servrian/servrian /usr/local/bin
 	cp src/maze/maze /usr/local/bin
+
+tests: webng
+	$(MAKE) -C tests/Makefile
 
 clean:
 	find src/* -type f ! -name "*.c" ! -name "*.h" ! -name "Makefile" \
