@@ -1,8 +1,7 @@
 /*
  * ****************************************************************************
  *
- * PROJECT:	Randomator: A builder and pseudo random number generator for
- * 				Servrian and Maze.
+ * PROJECT:	libwebng: A library to make encripted requests over the web.
  *
  * AUTHOR:	Brian Mayer blmayer@icloud.com
  *
@@ -36,15 +35,15 @@ unsigned char *read_chunks(int conn){
 
 	/* Here we read and update the body */
 	puts("\tReceiving chunked data...");
-	int chunk_size = 8;				/* The size to be read */
-	int body_size = 1; 				/* This space is for the end 0 */
+	int chunk_size = 8;			/* The size to be read */
+	int body_size = 1; 			/* This space is for the end 0 */
 	unsigned char *chunk = malloc(chunk_size);
 	unsigned char *body = malloc(body_size);
 	int pos;
 
 get_chunk:
 
-	/* ---- Determine chunk size ------------------------------------------- */
+	/* ---- Determine chunk size --------------------------------------- */
 
 	pos = 0;
 	while(read(conn, chunk + pos, 1) == 1){
@@ -65,7 +64,7 @@ get_chunk:
 	sscanf(chunk, "%x", &pos); 
 	bzero(chunk, chunk_size);
 
-	/* ---- Read chunk ----------------------------------------------------- */
+	/* ---- Read chunk ------------------------------------------------- */
 	
 	if(pos > 0){
 		/* Allocate the size needed and read the chunk to body */
@@ -81,7 +80,7 @@ get_chunk:
 		goto get_chunk;
 	}
 
-	/* ---- Sanitize and return -------------------------------------------- */
+	/* ---- Sanitize and return ---------------------------------------- */
 
 	free(chunk);
 	body[body_size + 1] = 0;
@@ -145,18 +144,20 @@ int parse_URL(char *url, struct url *addr){
 	addr -> proto = strstr(url, "://");
 	if(addr -> proto == NULL){
 		/* URL is like www.domain... */
-		addr -> domain = strtok(url, "/");
+		addr -> domain = strtok(url, "/:");
 	} else {
-		puts("With proto.");
 		/* Get the protocol */
 		addr -> proto = strtok(url, ":");
 		
 		/* Advance to next / to get the domain */
-		addr -> domain = strtok(NULL, "/");
+		addr -> domain = strtok(NULL, "/:");
 	}
 
+	/* Get the port if there's one */
+	addr -> port = strtok(NULL, ":/");
+
 	/* Now get the path */
-	addr -> path = strtok(NULL, "/");
+	addr -> path = strtok(NULL, ":/");
 
 	/* Prepend / to the path in any case */
 	int len;
@@ -176,7 +177,7 @@ int parse_URL(char *url, struct url *addr){
 		strcat(new, addr -> path);
 	}
 
-	/* Get paramenters and path from new string */
+	/* Get parameters and path from new string */
 	addr -> pars = strstr(new, "?");
 	addr -> path = strdup(new);
 
@@ -189,18 +190,18 @@ int parse_URL(char *url, struct url *addr){
 int parse_request(unsigned char *message, struct request *req){
 
 	/* Get first line parameters */
-	req -> type = strtok(message, " ");			/* First token is the method */
+	req -> type = strtok(message, " ");	/* First token is the method */
 	if(req -> type == NULL){
 		return -1;
 	}
 	
-	req -> url = strtok(NULL, " ");				/* Then the url or path */
-	strtok(NULL, "/"); 							/* Advance to the version no */
+	req -> url = strtok(NULL, " ");		/* Then the url or path */
+	strtok(NULL, "/"); 			/* Advance to the version no */
 
 	/* Due to atof we need to test for a NULL pointer */
 	char *ver = strtok(NULL, "\r\n");
 	if(ver != NULL){
-		req -> vers = atof(ver); 				/* Lastly the HTTP version */
+		req -> vers = atof(ver); 	/* Lastly the HTTP version */
 	} else {
 		puts("Could not parse header's version.");
 		return -1;
@@ -223,43 +224,43 @@ find:
 	
 	/* Keep advancing in string getting some parameters */
 	if(strncmp(temp, "User-Agent: ", 12) == 0){
-		strtok(NULL, " "); 						/* Advance to the value */
+		strtok(NULL, " "); 		/* Advance to the value */
 		req -> user = strtok(NULL, "\r\n");
 		goto find;
 	}
 
 	if(strncmp(temp, "Authorization: ", 15) == 0){
-		strtok(NULL, " "); 						/* Advance to the value */
+		strtok(NULL, " "); 		/* Advance to the value */
 		req -> auth = strtok(NULL, "\r\n");
 		goto find;
 	}
 
 	if(strncmp(temp, "Content-Length: ", 16) == 0){
-		strtok(NULL, " "); 						/* Advance to the value */
+		strtok(NULL, " "); 		/* Advance to the value */
 		req -> clen = atoi(strtok(NULL, "\r\n"));
 		goto find;
 	}
 
 	if(strncmp(temp, "Content-Type: ", 14) == 0){
-		strtok(NULL, " "); 						/* Advance to the value */
+		strtok(NULL, " "); 		/* Advance to the value */
 		req -> ctype = strtok(NULL, "\r\n");
 		goto find;
 	}
 
 	if(strncmp(temp, "Content-Encoding: ", 18) == 0){
-		strtok(NULL, " "); 						/* Advance to the value */
+		strtok(NULL, " "); 		/* Advance to the value */
 		req -> cenc = strtok(NULL, "\r\n");
 		goto find;
 	}
 
 	if(strncmp(temp, "Connection: ", 12) == 0){
-		strtok(NULL, " "); 						/* Advance to the value */
+		strtok(NULL, " "); 		/* Advance to the value */
 		req -> conn = strtok(NULL, "\r\n");
 		goto find;
 	}
 
 	if(strncmp(temp, "Key: ", 5) == 0){
-		strtok(NULL, " "); 						/* Advance to the value */
+		strtok(NULL, " "); 		/* Advance to the value */
 		req -> key = strtok(NULL, "\r\n");
 		goto find;
 	}
@@ -275,12 +276,12 @@ find:
 int parse_response(unsigned char *message, struct response *res){
 
 	/* Get first line parameters */
-	strtok(message, "/");						/* Jump to the first / */
+	strtok(message, "/");			/* Jump to the first / */
 
 	/* Due to atof we need to test for a NULL pointer */
 	char *ver = strtok(NULL, " ");
 	if(ver != NULL){
-		res -> vers = atof(ver);				/* Lastly the HTTP version */
+		res -> vers = atof(ver);	/* Lastly the HTTP version */
 	} else {
 		puts("Could not parse header's version.");
 		return -1;
@@ -289,7 +290,7 @@ int parse_response(unsigned char *message, struct response *res){
 	/* Advance to the status */
 	char *stat = strtok(NULL, " ");
 	if(stat != NULL){
-		res -> status = atoi(stat);				/* Lastly the HTTP version */
+		res -> status = atoi(stat);	/* Lastly the HTTP version */
 	} else {
 		puts("Could not parse header's status.");
 		return -1;
@@ -386,8 +387,8 @@ unsigned char *create_req_header(struct request req){
 			number /= 10;
 			digits++;
 		}
-		header_size += digits + 18;					/* Number of digits */
-		header_size += 14 + strlen(req.ctype);		/* Content Encoding */
+		header_size += digits + 18;		/* Number of digits */
+		header_size += 14 + strlen(req.ctype);	/* Content Encoding */
 	}
 
 	/* The header string, +1 for the end zero and +2 for blank line */
@@ -473,8 +474,8 @@ unsigned char *create_res_header(struct response res){
 			number /= 10;
 			digits++;
 		}
-		header_size += digits + 18;					/* Number of digits */
-		header_size += 16 + strlen(res.ctype);		/* Content Encoding */
+		header_size += digits + 18;		/* Number of digits */
+		header_size += 16 + strlen(res.ctype);	/* Content Encoding */
 	}
 	
 	/* Connection line */
@@ -514,37 +515,39 @@ unsigned char *create_res_header(struct response res){
 	return strdup(header);
 }
 
-unsigned char *encode(unsigned char *message, unsigned char key[]){
+unsigned char *encode(unsigned char *message, unsigned char *key){
 
-	/* Get length of received message */
-	int n = strlen(message) + 1;		/* Add the terminating zero place */
+	/* Get length of received message and key */
+	int n = strlen(message);
 	int i = 0;
-	unsigned char cipher[n];
+	int key_len = strlen(key);
+	unsigned char cipher[n + 1];	/* Add the terminating zero place */
 	
 	/* Loop changing characters */
 	while(i < n){
-		cipher[i] = (message[i] ^ key[i % 512]) + 1;	/* +1 to never get 0 */
+		cipher[i] = (message[i] ^ key[i % key_len]) + 30;
 		i++;
 	}
 
-	cipher[n] = 0;	  /* Add terminating zero */
+	cipher[n] = 0;	  		/* Add terminating zero */
 	return strdup(cipher);
 }
 
-unsigned char *decode(unsigned char *cipher, unsigned char key[]){
+unsigned char *decode(unsigned char *cipher, unsigned char *key){
 
-	/* Get length of received message */
-	int n = strlen(cipher) + 1;		/* Add the terminating zero place */
+	/* Get length of received message and key */
+	int n = strlen(cipher);
 	int i = 0;
-	unsigned char message[n];
+	int key_len = strlen(key);
+	unsigned char message[n + 1];	/* Add the terminating zero place */
 
 	/* Loop changing characters */
 	while(i < n){
-		message[i] = (cipher[i] - 1) ^ key[i % 512];
+		message[i] = (cipher[i] - 30) ^ key[i % key_len];
 		i++;
 	}
 
-	message[n] = 0;	  /* Add terminating zero */
+	message[n] = 0;	  		/* Add terminating zero */
 
 	return strdup(message);
 }
