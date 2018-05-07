@@ -88,10 +88,10 @@ char *date_line(){
     struct tm *cur_time;                /* Obtain current time */
     time_t now = time(NULL);
     cur_time = gmtime(&now);
-    char res_time[36];                  /* Convert to local time format */
+    char res_time[30];                  /* Convert to local time format */
 
     /* Date: Fri, 31 Dec 1999 23:59:59 GMT */
-    strftime(res_time, 38, "Date: %a, %d %b %Y %X %Z", cur_time);
+    strftime(res_time, 32, "%a, %d %b %Y %X %Z", cur_time);
 
     return strdup(res_time);
 }
