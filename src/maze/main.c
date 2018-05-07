@@ -113,8 +113,29 @@ int main(int argc, char *argv[]){
 	/* Populate the response struct */
 	unsigned char *response = get_header(server);
 	struct response res = {0};
-	parse_response(response, &res);
+	if(parse_response(response, &res) < 0)
+	{
+		/* Could be an encrypted response */
+		puts("Trying to decode response...");
+		if(parse_response(decode(response, KEY), &res) < 0)
+		{
+			puts("Bad response.");
+			return 0;
+		}
+	}
 
+	/* Print values for checking */
+	puts("\tParsed:");
+	printf("\tVersion: %.1f\n", res.vers);
+	printf("\tStatus: %d\n", res.status);
+	printf("\tServer: %s\n", res.serv);
+	printf("\tConnection: %s\n", res.conn);
+	printf("\tContent Type: %s\n", res.ctype);
+	printf("\tContent Length: %d\n", res.clen);
+	printf("\tDate: %s\n", res.date);
+	printf("\tAuthorization: %s\n", res.auth);
+	printf("\tKey: %s\n", res.key);
+	
 	/* The transfer may be normal */
 	if(res.clen > 0)
 	{
