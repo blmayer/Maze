@@ -208,66 +208,60 @@ int parse_request(unsigned char *message, struct request *req){
 	}
 
 	/* Put pointer in next line */
-	char *temp;
-
-find:
-
-	/* Put pointer in next line */
-	temp = strtok(NULL, "\r\n");
-
-	/* If is null quit */
-	if(temp == NULL){
-		/* No more parameters, quit */
-		puts("parsed");
-		return 0;
-	}
+	char *temp = strtok(NULL, "\r\n");
 	
-	/* Keep advancing in string getting some parameters */
-	if(strncmp(temp, "User-Agent: ", 12) == 0){
-		strtok(NULL, " "); 		/* Advance to the value */
-		req -> user = strtok(NULL, "\r\n");
-		goto find;
-	}
-
-	if(strncmp(temp, "Authorization: ", 15) == 0){
-		strtok(NULL, " "); 		/* Advance to the value */
-		req -> auth = strtok(NULL, "\r\n");
-		goto find;
-	}
-
-	if(strncmp(temp, "Content-Length: ", 16) == 0){
-		strtok(NULL, " "); 		/* Advance to the value */
-		req -> clen = atoi(strtok(NULL, "\r\n"));
-		goto find;
-	}
-
-	if(strncmp(temp, "Content-Type: ", 14) == 0){
-		strtok(NULL, " "); 		/* Advance to the value */
-		req -> ctype = strtok(NULL, "\r\n");
-		goto find;
-	}
-
-	if(strncmp(temp, "Content-Encoding: ", 18) == 0){
-		strtok(NULL, " "); 		/* Advance to the value */
-		req -> cenc = strtok(NULL, "\r\n");
-		goto find;
-	}
-
-	if(strncmp(temp, "Connection: ", 12) == 0){
-		strtok(NULL, " "); 		/* Advance to the value */
-		req -> conn = strtok(NULL, "\r\n");
-		goto find;
-	}
-
-	if(strncmp(temp, "Key: ", 5) == 0){
-		strtok(NULL, " "); 		/* Advance to the value */
-		req -> key = strtok(NULL, "\r\n");
-		goto find;
-	}
-
-	if(temp != NULL){
-		/* Different parameter, skip this line */
-		goto find;
+	while(temp != NULL)
+	{
+		/* Keep advancing in string getting some parameters */
+		if(strncmp(temp, "Host: ", 6) == 0)
+		{
+			req -> host = temp + 6;
+			temp = strtok(NULL, "\r\n");
+			continue;
+		}
+		if(strncmp(temp, "User-Agent: ", 12) == 0)
+		{
+			req -> user = temp + 12;
+			temp = strtok(NULL, "\r\n");
+			continue;
+		}
+		if(strncmp(temp, "Authorization: ", 15) == 0)
+		{
+			req -> auth = temp + 15;
+			temp = strtok(NULL, "\r\n");
+			continue;
+		}
+		if(strncmp(temp, "Content-Length: ", 16) == 0)
+		{
+			req -> clen = atoi(temp + 16);
+			temp = strtok(NULL, "\r\n");
+			continue;
+		}
+		if(strncmp(temp, "Content-Type: ", 14) == 0)
+		{
+			req -> ctype = temp + 14;
+			temp = strtok(NULL, "\r\n");
+			continue;
+		}
+		if(strncmp(temp, "Content-Encoding: ", 18) == 0)
+		{
+			req -> cenc = temp + 18;
+			temp = strtok(NULL, "\r\n");
+			continue;
+		}
+		if(strncmp(temp, "Connection: ", 12) == 0)
+		{
+			req -> conn = temp + 12;
+			temp = strtok(NULL, "\r\n");
+			continue;
+		}
+		if(strncmp(temp, "Key: ", 5) == 0)
+		{
+			req -> key = temp + 5;
+			temp = strtok(NULL, "\r\n");
+			continue;
+		}
+		temp = strtok(NULL, "\r\n");
 	}
 
 	return 0;
@@ -297,63 +291,66 @@ int parse_response(unsigned char *message, struct response *res){
 	}
 
 	/* Put pointer in next line */
-	char *temp;
-
-find:
-
-	/* Put pointer in next line */
-	temp = strtok(NULL, "\r\n");
-
-	/* If is null quit */
-	if(temp == NULL){
-		/* No more parameters, quit */
-		return 0;
-	}
+	char *temp = strtok(NULL, "\r\n");
 	
-	/* Keep advancing in string getting some parameters */
-	if(strncmp(temp, "Server: ", 8) == 0){
-		res -> serv = temp + 8;
-		goto find;
-	}
-
-	if(strncmp(temp, "Authorization: ", 15) == 0){
-		res -> auth = temp + 15;
-		goto find;
-	}
-
-	if(strncmp(temp, "Content-Length: ", 16) == 0){
-		res -> clen = atoi(temp + 16);
-		goto find;
-	}
-
-	if(strncmp(temp, "Content-Type: ", 14) == 0){
-		res -> ctype = temp + 14;
-		goto find;
-	}
-
-	if(strncmp(temp, "Content-Encoding: ", 18) == 0){
-		res -> cenc = temp + 18;
-		goto find;
-	}
-
-	if(strncmp(temp, "Connection: ", 12) == 0){
-		res -> conn = temp + 12;
-		goto find;
-	}
-
-	if(strncmp(temp, "Transfer-Encoding: ", 19) == 0){
-		res -> ttype = temp + 19;
-		goto find;
-	}
-
-	if(strncmp(temp, "Key: ", 5) == 0){
-		res -> key = temp + 5;
-		goto find;
-	}
-
-	if(temp != NULL){
-		/* Different parameter, skip this line */
-		goto find;
+	while(temp != NULL)
+	{
+		/* Keep advancing in string getting some parameters */
+		if(strncmp(temp, "Server: ", 8) == 0)
+		{
+			res -> serv = temp + 8;
+			temp = strtok(NULL, "\r\n");
+			continue;
+		}
+		if(strncmp(temp, "Date: ", 6) == 0)
+		{
+			res -> date = temp + 6;
+			temp = strtok(NULL, "\r\n");
+			continue;
+		}
+		if(strncmp(temp, "Authorization: ", 15) == 0)
+		{
+			res -> auth = temp + 15;
+			temp = strtok(NULL, "\r\n");
+			continue;
+		}
+		if(strncmp(temp, "Content-Length: ", 16) == 0)
+		{
+			res -> clen = atoi(temp + 16);
+			temp = strtok(NULL, "\r\n");
+			continue;
+		}
+		if(strncmp(temp, "Content-Type: ", 14) == 0)
+		{
+			res -> ctype = temp + 14;
+			temp = strtok(NULL, "\r\n");
+			continue;
+		}
+		if(strncmp(temp, "Content-Encoding: ", 18) == 0)
+		{
+			res -> cenc = temp + 18;
+			temp = strtok(NULL, "\r\n");
+			continue;
+		}
+		if(strncmp(temp, "Connection: ", 12) == 0)
+		{
+			res -> conn = temp + 12;
+			temp = strtok(NULL, "\r\n");
+			continue;
+		}
+		if(strncmp(temp, "Transfer-Encoding: ", 19) == 0)
+		{
+			res -> ttype = temp + 19;
+			temp = strtok(NULL, "\r\n");
+			continue;
+		}
+		if(strncmp(temp, "Key: ", 5) == 0)
+		{
+			res -> key = temp + 5;
+			temp = strtok(NULL, "\r\n");
+			continue;
+		}
+		temp = strtok(NULL, "\r\n");
 	}
 
 	return 0;
@@ -361,6 +358,8 @@ find:
 
 unsigned char *create_req_header(struct request req){
 	
+	/* ---- Calculate size of the final string ------------------------ */
+
 	/* URL request line, includes version, spaces and \r\n */
 	int header_size = strlen(req.type) + strlen(req.url) + 12;
 
@@ -372,10 +371,10 @@ unsigned char *create_req_header(struct request req){
 	
 	/* And optional lines */
 	if(req.auth != NULL){
-		header_size += strlen(req.auth) + 17; 	/* len(authorization: ) + 2 */
+		header_size += strlen(req.auth) + 17;
 	}
 	if(req.key != NULL){
-		header_size += strlen(req.key) + 7; 	/* len(Key: ) + \r\n */
+		header_size += strlen(req.key) + 7;
 	}
 	
 	/* File length line, if we want */
@@ -391,48 +390,55 @@ unsigned char *create_req_header(struct request req){
 		header_size += 14 + strlen(req.ctype);	/* Content Encoding */
 	}
 
+	/* ---- Glue them together ----------------------------------------- */
+
 	/* The header string, +1 for the end zero and +2 for blank line */
-	unsigned char header[header_size + 46];
+	unsigned char header[header_size + 48];
 	
 	/* Copy all parameters to it */
-	sprintf(header, "%s %s HTTP/%.1f\r\n", req.type, req.url, req.vers);
-	sprintf(header + strlen(header), "Host: %s\r\n", req.host);
-	sprintf(header + strlen(header), "User-Agent: %s\r\n", req.user);
-	sprintf(header + strlen(header), "Connection: %s\r\n", req.conn);
-	sprintf(header + strlen(header), "Accept: %s\r\n", req.cenc);
+	sprintf(header, 
+		"%s %s HTTP/%.1f\r\n"
+		"Host: %s\r\n"
+		"User-Agent: %s\r\n"
+		"Connection: %s\r\n"
+		"Accept: %s\r\n", 
+		req.type, req.url, req.vers, req.host, 
+		req.user, req.conn, req.cenc);
 
 	/* Optional lines */
 	if(req.auth != NULL){
 		sprintf(header + strlen(header), "Authorization: %s\r\n", req.auth);
 	}
-
 	if(req.clen > 0){
-		sprintf(header + strlen(header), "Content-Type: %s\r\n", req.ctype);
-		sprintf(header + strlen(header), "Content-Length: %s\r\n", req.clen);
+		sprintf(header + strlen(header),
+				"Content-Type: %s\r\n"
+				"Content-Length: %s\r\n",
+				req.ctype, req.clen);
 	}
-
 	if(req.key != NULL){
 		sprintf(header + strlen(header), "Key: %s\r\n", req.key);
 		strcpy(header, encode(header, req.key));
+		strcat(header, "\r\n");
 	}
 	
 	/* Add blank line */
-	sprintf(header + strlen(header), "\r\n");
+	strcat(header, "\r\n");
 	
 	/* Add end zero */
-	header[header_size + 45] = 0;
+	header[header_size + 47] = 0;
 
 	return strdup(header);
 }
 
-unsigned char *create_res_header(struct response res){
-	
-	/* URL resuest line, includes version, spaces and \r\n */
-	int header_size = 16; 		/* Size of HTTP/1.1 + 5 + \r\n + end zero */
+unsigned char *create_res_header(struct response res)
+{	
+	/* URL request line, includes version, spaces and \r\n */
+	int header_size = 16; 	/* Size of HTTP/1.1 + 5 + \r\n + end zero */
 
 	/* Make the status line */
 	char *status_line;
-	switch(res.status){
+	switch(res.status)
+	{
 	case 200:
 		status_line = "OK";
 		header_size += 4;
@@ -466,7 +472,8 @@ unsigned char *create_res_header(struct response res){
 	header_size += 8 + strlen(res.date);
 
 	/* File length line, if we want */
-	if(res.clen > 0){
+	if(res.clen > 0)
+	{
 		/* Count the number of digits */
 		int number = res.clen;
 		int digits = 0;
@@ -479,39 +486,48 @@ unsigned char *create_res_header(struct response res){
 	}
 	
 	/* Connection line */
-	if(res.conn != NULL) {
+	if(res.conn != NULL)
+	{
 		header_size += strlen(res.conn) + 14;
 	}
 	
 	/* The header string */
-	unsigned char header[header_size];
+	unsigned char header[header_size + 2];
 
 	/* Copy all parameters to it */
-	sprintf(header, "HTTP/%.1f %d %s\r\n", res.vers, res.status, status_line);
-	sprintf(header + strlen(header), "Server: %s\r\n", res.serv);
-	sprintf(header + strlen(header), "Date: %s\r\n", res.date);
+	sprintf(header, 
+		"HTTP/%.1f %d %s\r\n"
+		"Server: %s\r\n"
+		"Date: %s\r\n", 
+		res.vers, res.status, status_line, res.serv, res.date);
 
 	/* Optional lines */
-	if(res.clen > 0){
-		sprintf(header + strlen(header), "Content-Type: %s\r\n", res.ctype);
-		sprintf(header + strlen(header), "Content-Length: %d\r\n", res.clen);
+	if(res.clen > 0)
+	{
+		sprintf(header + strlen(header), 
+			"Content-Type: %s\r\nContent-Length: %d\r\n",
+			res.ctype, res.clen);
 	}
 
 	/* Connection line */
-	if(res.conn != NULL) {
+	if(res.conn != NULL)
+	{
 		sprintf(header + strlen(header), "Connection: %s\r\n", res.conn);
 	}
 	/* Encrypt using passed key */
-	if(res.key != NULL){
+	if(res.key != NULL)
+	{
 		strcpy(header, encode(header, res.key));
+		strcat(header, "\r\n");
 	}
 	
 	/* Add blank line */
-	sprintf(header + strlen(header), "\r\n");
+	strcat(header, "\r\n");
 
 	/* Add end zero */
-	header[header_size - 1] = 0;
+	header[header_size + 1] = 0;
 
+	printf("Header:\n'%s'\n", header);
 	return strdup(header);
 }
 
@@ -525,7 +541,7 @@ unsigned char *encode(unsigned char *message, unsigned char *key){
 	
 	/* Loop changing characters */
 	while(i < n){
-		cipher[i] = (message[i] ^ key[i % key_len]) + 30;
+		cipher[i] = (message[i] ^ key[i % key_len]) + 33;
 		i++;
 	}
 
@@ -543,7 +559,7 @@ unsigned char *decode(unsigned char *cipher, unsigned char *key){
 
 	/* Loop changing characters */
 	while(i < n){
-		message[i] = (cipher[i] - 30) ^ key[i % key_len];
+		message[i] = (cipher[i] - 33) ^ key[i % key_len];
 		i++;
 	}
 
