@@ -43,4 +43,5 @@ tests: webng
 clean:
 	find src/* -type f ! -name "*.c" ! -name "*.h" ! -name "Makefile" \
 		-exec rm {} \;
+	find tests/* -type f ! -name "*.c" ! -name "Makefile" -exec rm {} \;
 
