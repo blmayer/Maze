@@ -28,7 +28,7 @@ int send_get(int conn, struct request req){
 	}
 
 	/* Client identification */
-	req.user = "Maze-" VERSION;
+	req.user = "Maze/" VERSION;
 	
 	/* Accept encoding */
 	req.cenc =  "*/*";
