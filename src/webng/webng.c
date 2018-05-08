@@ -90,24 +90,25 @@ get_chunk:
 	return strdup(dest);
 }
 
-unsigned char *get_header(int conn){
-
+unsigned char *get_header(int conn)
+{
 	int pos = 0;
 	int buff_size = 1024;
 	unsigned char *buffer = calloc(buff_size, 1);
 
 	/* This is a loop that will read the data coming from our connection */
-	while(read(conn, buffer + pos, 1) == 1){
-		
+	while(read(conn, buffer + pos, 1) == 1)
+	{	
 		/* Increase pos by 1 to follow the buffer size */
 		pos++;
-		
 		/* The only thing that can break our loop is a blank line */
-		if(strcmp(buffer + pos - 4, "\r\n\r\n") == 0){ 
+		if(strcmp(buffer + pos - 4, "\r\n\r\n") == 0)
+		{
 			break;
 		}
 		
-		if(pos == buff_size){
+		if(pos == buff_size)
+		{
 			buff_size += 512;
 			buffer = realloc(buffer, buff_size);
 		}
@@ -191,7 +192,9 @@ int parse_request(unsigned char *message, struct request *req){
 
 	/* Get first line parameters */
 	req -> type = strtok(message, " ");	/* First token is the method */
-	if(req -> type == NULL){
+	if(req -> type == NULL)
+	{
+		puts("\tCould not parse the method.");
 		return -1;
 	}
 	
@@ -203,7 +206,7 @@ int parse_request(unsigned char *message, struct request *req){
 	if(ver != NULL){
 		req -> vers = atof(ver); 	/* Lastly the HTTP version */
 	} else {
-		puts("Could not parse header's version.");
+		puts("\tCould not parse header's version.");
 		return -1;
 	}
 
@@ -267,26 +270,33 @@ int parse_request(unsigned char *message, struct request *req){
 	return 0;
 }
 
-int parse_response(unsigned char *message, struct response *res){
-
-	/* Get first line parameters */
-	strtok(message, "/");			/* Jump to the first / */
+int parse_response(unsigned char *message, struct response *res)
+{
+	/* ---- Get first line parameters ---------------------------------- */
 
 	/* Due to atof we need to test for a NULL pointer */
-	char *ver = strtok(NULL, " ");
-	if(ver != NULL){
-		res -> vers = atof(ver);	/* Lastly the HTTP version */
-	} else {
-		puts("Could not parse header's version.");
+	char *ver = strtok(message, " ");
+	if(ver != NULL)
+	{
+		/* The HTTP version */
+		res -> vers = atof(ver + 5);
+	} 
+	else
+	{
+		puts("\tCould not parse header's version.");
 		return -1;
 	}
 
 	/* Advance to the status */
 	char *stat = strtok(NULL, " ");
-	if(stat != NULL){
-		res -> status = atoi(stat);	/* Lastly the HTTP version */
-	} else {
-		puts("Could not parse header's status.");
+	if(stat != NULL)
+	{
+		/* Lastly the HTTP status */
+		res -> status = atoi(stat);
+	} 
+	else 
+	{
+		puts("\tCould not parse header's status.");
 		return -1;
 	}
 
@@ -370,19 +380,23 @@ unsigned char *create_req_header(struct request req){
 	header_size += strlen(req.cenc) + 2;
 	
 	/* And optional lines */
-	if(req.auth != NULL){
+	if(req.auth != NULL)
+	{
 		header_size += strlen(req.auth) + 17;
 	}
-	if(req.key != NULL){
+	if(req.key != NULL)
+	{
 		header_size += strlen(req.key) + 7;
 	}
 	
 	/* File length line, if we want */
-	if(req.clen > 0){
+	if(req.clen > 0)
+	{
 		/* Count the number of digits */
 		int number = req.clen;
 		int digits = 0;
-		while(number != 0){
+		while(number != 0)
+		{
 			number /= 10;
 			digits++;
 		}
@@ -431,7 +445,7 @@ unsigned char *create_req_header(struct request req){
 }
 
 unsigned char *create_res_header(struct response res)
-{	
+{
 	/* URL request line, includes version, spaces and \r\n */
 	int header_size = 16; 	/* Size of HTTP/1.1 + 5 + \r\n + end zero */
 
@@ -443,22 +457,18 @@ unsigned char *create_res_header(struct response res)
 		status_line = "OK";
 		header_size += 4;
 		break;
-
 	case 400:
 		status_line = "Bad Request";
 		header_size += 13;
 		break;
-
 	case 404:
 		status_line = "Not Found";
 		header_size += 11;
 		break;
-
 	case 500:
 		status_line = "Internal Server Error";
 		header_size += 23;
 		break;
-
 	case 501:
 		status_line = "Not Implemented";
 		header_size += 17;
@@ -527,7 +537,6 @@ unsigned char *create_res_header(struct response res)
 	/* Add end zero */
 	header[header_size + 1] = 0;
 
-	printf("Header:\n'%s'\n", header);
 	return strdup(header);
 }
 
