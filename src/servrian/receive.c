@@ -41,63 +41,70 @@ int send_response(unsigned int cli_conn){
 		return 0;
 	}
 
-	printf("\tData received:\n%s\n", buffer);
 	struct request req = {0};	/* Create our request structure */
 	struct response res = {0};	/* And our response structure */
 	
 	/* Populate our struct with request */
 	if(parse_request(buffer, &req) < 0){
 		/* Probably request is encrypted */
+		puts("\tTrying to parse an encrypted request...");
 		if(parse_request(decode(buffer, KEY), &req) < 0){
 			/* Bad request received */
 			puts("\tReceived bad request...");
 			res.status = 400;
-			unsigned char *ni_head = create_res_header(res);
-			write(cli_conn, ni_head, strlen(ni_head));
-			return 0;
 		}
 	}
+	
+	/* Print values for checking */
+	puts("\tParsed:");
+	printf("\tPath: %s\n", req.url);
+	printf("\tVersion: %.1f\n", req.vers);
+	printf("\tUser-Agent: %s\n", req.user);
+	printf("\tConnection: %s\n", req.conn);
+	printf("\tContent Type: %s\n", req.ctype);
+	printf("\tContent Length: %d\n", req.clen);
+	printf("\tAuthorization: %s\n", req.auth);
+	printf("\tKey: %s\n", req.key);
 	
 	/* Populate the response struct based on the request struct */
 	res.type = req.type;
 	res.path = req.url;
 	res.vers = req.vers;
-	res.serv = "Servrian-" VERSION;
+	res.serv = "Servrian/" VERSION;
 
 	/* Optional parameters, doesn't know how to handle this nicely */
-	if(req.auth == NULL){
+	if(req.auth == NULL)
+	{
 		res.auth = NULL;
-	} else {
+	} 
+	else
+	{
 		res.auth = req.auth;
 	}
-	if(req.key == NULL){
+	if(req.key == NULL)
+	{
 		res.key = NULL;
-	} else {
+	}
+	else
+	{
 		res.key = req.key;
 	}
-	if(req.conn == NULL){
+	if(req.conn == NULL)
+	{
 		res.conn = "Keep-Alive";
-	} else {
+	}
+	else
+	{
 		res.conn = req.conn;
 	}
 
-	/* Print values for checking */
-	puts("\tParsed:");
-	printf("\tPath: %s\n", res.path);
-	printf("\tStatus: %d\n", res.status);
-	printf("\tVersion: %.1f\n", res.vers);
-	printf("\tConnection: %s\n", res.conn);
-	printf("\tContent Type: %s\n", res.ctype);
-	printf("\tContent Length: %d\n", res.clen);
-	printf("\tDate: %s\n", res.date);
-	printf("\tAuthorization: %s\n", res.auth);
-	printf("\tKey: %s\n", res.key);
-	
 	/* Process the response with the correct method */
-	switch(strcmp(req.type, "PEZ")){
+	switch(strcmp(req.type, "PEZ"))
+	{
 	case -8:
 		puts("\tReceived HEAD");
-		if(serve_head(cli_conn, res) < 0){
+		if(serve_head(cli_conn, res) < 0)
+		{
 			perror("\tUnable to respond");
 			return -1;
 		}
@@ -106,7 +113,8 @@ int send_response(unsigned int cli_conn){
 	
 	case -9:
 		puts("\tProcessing GET request...");
-		if(serve_get(cli_conn, res) < 0){
+		if(serve_get(cli_conn, res) < 0)
+		{
 			perror("\tA problem occurred");
 			return -1;
 		}
@@ -115,7 +123,8 @@ int send_response(unsigned int cli_conn){
 	
 	case 10:
 		puts("\tProcessing POST request...");
-		if(handle_post(cli_conn, res) < 0){
+		if(handle_post(cli_conn, res) < 0)
+		{
 			perror("\tA problem occurred");
 			return -1;
 		}
@@ -125,14 +134,17 @@ int send_response(unsigned int cli_conn){
 	default:
 		puts("Unsupported request.");
 		res.status = 501;
-		unsigned char *unsp = create_res_header(res);
-		write(cli_conn, unsp, strlen(unsp));
-		return 0;
-
+		if(serve_get(cli_conn, res) < 0)
+		{
+			perror("\tA problem occurred");
+			return -1;
+		}
+		puts("\tResponse sent.");
 	}
 
 	/* Close connection depending on the case */
-	if(strcmp(res.conn, "Close") != 0 || res.vers > 1){
+	if(strcmp(res.conn, "Close") != 0 || res.vers > 1)
+	{
 		puts("\tReceiving again...");
 		send_response(cli_conn);
 	}
