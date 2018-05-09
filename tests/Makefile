@@ -1,6 +1,6 @@
 .PHONY: tests
 
-tests: parse_URL encode_decode parse_request parse_response
+tests: parse_URL encode_decode parse_request parse_response create_response
 
 parse_URL: parse_URL.c
 	$(CC) $^ -o $@ -lwebng
@@ -31,6 +31,11 @@ parse_request: parse_request.c
 	./$@
 
 parse_response: parse_response.c
+	$(CC) $^ -o $@ -lwebng
+	@echo "#---- Running test suite --------------------------#"
+	./$@
+
+create_response: create_response.c
 	$(CC) $^ -o $@ -lwebng
 	@echo "#---- Running test suite --------------------------#"
 	./$@
