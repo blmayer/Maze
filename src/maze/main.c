@@ -25,6 +25,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/socket.h>
@@ -112,11 +113,13 @@ int main(int argc, char *argv[]){
 
 	/* Populate the response struct */
 	unsigned char *response = get_header(server);
+	printf("received\n'%s'\n", response);
 	struct response res = {0};
 	if(parse_response(response, &res) < 0)
 	{
 		/* Could be an encrypted response */
 		puts("Trying to decode response...");
+		printf("decoded:\n'%s'\n", decode(response, KEY));
 		if(parse_response(decode(response, KEY), &res) < 0)
 		{
 			puts("Bad response.");
@@ -136,29 +139,38 @@ int main(int argc, char *argv[]){
 	printf("\tAuthorization: %s\n", res.auth);
 	printf("\tKey: %s\n", res.key);
 	
+	/* ---- Receiving the body ----------------------------------------- */
+
+	res.body = malloc(1);
+
 	/* The transfer may be normal */
 	if(res.clen > 0)
 	{
-		/* Allocate space for the body */
-		unsigned char body[res.clen + 1];
+		/* Reallocate space for the body */
+		res.body = realloc(res.body, res.clen + 1);
 		
 		/* Read the content from the socket */
-		read(server, body, res.clen);
-		body[res.clen] = 0;
-		printf("Body:\n%s\n", body);
+		read(server, res.body, res.clen);
+		res.body[res.clen] = 0;
 	}
 
 	/* Or may be chunked */
 	if(res.ttype != NULL && strcmp(res.ttype, "chunked") == 0)
 	{
 		/* Here we read and update the body */
-		unsigned char *body = read_chunks(server);
-		
-		printf("Body:\n%s\n", body);
+		unsigned char *temp = read_chunks(server);
+		res.body = strdup(temp);
 	}
 
 	/* Body read, close the connection */
+	if(req.key != NULL)
+	{
+		res.body = decode(res.body, req.key);
+	}
+
+	printf("Body:\n%s\n", res.body);
 	close(server);
+	free(res.body);
 
 	return 0;
 }
