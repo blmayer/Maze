@@ -500,9 +500,15 @@ unsigned char *create_res_header(struct response res)
 	{
 		header_size += strlen(res.conn) + 14;
 	}
+
+	/* Another blank line */
+	if(res.key != NULL)
+	{
+		header_size += 2;
+	}
 	
 	/* The header string */
-	unsigned char header[header_size + 2];
+	unsigned char header[header_size + 1];
 
 	/* Copy all parameters to it */
 	sprintf(header, 
@@ -527,15 +533,14 @@ unsigned char *create_res_header(struct response res)
 	/* Encrypt using passed key */
 	if(res.key != NULL)
 	{
-		strcpy(header, encode(header, res.key));
-		strcat(header, "\r\n");
+		sprintf(header, "%s\r\n", encode(header, res.key));
 	}
 	
 	/* Add blank line */
 	strcat(header, "\r\n");
 
 	/* Add end zero */
-	header[header_size + 1] = 0;
+	header[header_size] = 0;
 
 	return strdup(header);
 }
