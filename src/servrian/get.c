@@ -25,10 +25,11 @@
 #include "get.h"
 #include "login.h"
 
-int serve_get(unsigned int conn, struct response res){
-
+int serve_get(unsigned int conn, struct response res)
+{
 	/* If the user sends the token respond with the correct page */
-	if(res.auth != NULL){
+	if(res.auth != NULL)
+	{
 		/* Check authorization cases */
 		res.status = authorization(res.auth);
 	}
@@ -36,20 +37,18 @@ int serve_get(unsigned int conn, struct response res){
 	/* ---- Update path with the web pages directory ------------------- */
 
  	/* If / was passed, redirect to index page */
- 	if(strncmp(res.path, "/", 1) == 0){
-		strtok(res.path, "/");
-		unsigned char *temp = strtok(NULL, "/");
-		if(temp == NULL){
-			res.path = "index.html";
-		} else {
-			res.path = temp;
-		}
+ 	if(strncmp(res.path, "/", 1) == 0 && strlen(res.path) > 1)
+	{
+		res.path = strtok(res.path, "/");
+	}
+	else
+	{
+		res.path = "index.html";
  	}
 
 	/* Choose page based on the status */
-	switch(res.status){
-	case 200:
-		break;
+	switch(res.status)
+	{
 	case 401:
 		res.path = "401.html";
 		break;
@@ -61,6 +60,9 @@ int serve_get(unsigned int conn, struct response res){
 		break;
 	case 501:
 		res.path = "501.html";
+		break;
+	default:
+		res.status = 200;
 	}
 
 prepend:
@@ -83,9 +85,6 @@ prepend:
 		/* Changing to 404 page */
 		res.path = "404.html";
 		goto prepend;
-	} else {
-		/* File found */
-		res.status = 200;
 	}
 	
 	fseek(page_file, 0, SEEK_END);		/* Seek to the end */
@@ -102,7 +101,8 @@ prepend:
 	/* ---- Header creation part --------------------------------------- */
 
 	/* Verify the connection and request version */
-	if(res.conn != NULL){
+	if(res.conn == NULL && res.vers > 1)
+	{
 		res.conn = "Keep-Alive";
 	}
 
@@ -112,10 +112,17 @@ prepend:
 
 	/* Create the head */
 	unsigned char *response = create_res_header(res);
-
 	write(conn, response, strlen(response));	/* Send response */
-	write(conn, res.body, res.clen);		/* Now the body */
-	
+	if(res.key != NULL)
+	{
+		/* Send an encrypted body */
+		write(conn, encode(res.body, res.key), res.clen);
+	}
+	else
+	{
+		write(conn, res.body, res.clen);
+	}
+
 	printf("\tFile %s served.\n", res.path);
 	
 	return 0;
