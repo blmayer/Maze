@@ -3,17 +3,13 @@
  *
  * PROJECT:     Servrian
  *
- * TITLE:       
- *
  * FUNCTION:    This is the function that will process the file requested in a
  *              POST, it takes three arguments: The endpoint chosen will
  *              determine what script (function) would handle the request.
  *
  * AUTHOR:      Brian Mayer blmayer@icloud.com
  *
- * NOTES:
- *
- * COPYRIGHT:   All rigths reserved. All wrongs deserved. (Peter D. Hipson)
+ * Copyright (c) 2018    Brian Mayer
  *
  * ****************************************************************************
  */
