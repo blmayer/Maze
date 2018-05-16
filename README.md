@@ -93,12 +93,13 @@ Distributed under The GNU GPL v2. See [LICENSE](docs/LICENSE) for more informati
 
 ## Current work
 
-- Creating a graphical interface;
+- Creating a better encryption algorthm.
 
 ## To-do
 
 There are lots of things to do, the ones in my mind now are listed below.
 
+- Creating a graphical interface;
 - Support PUT, DELETE and UPDATE requests (I don't know what for);
 - Support wide characters;
 - Use encryption for logged in users; &
