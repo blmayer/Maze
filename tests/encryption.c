@@ -5,12 +5,13 @@
 
 int main(void)
 {
-	char message[] = "this will be a really fucking good good encoded string.";
+	char message[] = "this will be a good encoded string.";
 	int mess_len = strlen(message);
 	char encoded[mess_len + 1];
 	int letters[128] = {0};
 	int sum = 0;
 	int letter = 0;
+	printf("string has length: %d\n", mess_len);
 
 	while(letter < mess_len)
 	{
@@ -18,39 +19,30 @@ int main(void)
 		sum += letter + message[letter];
 		letter++; 
 	}
-	letter = 0;
-
-	while(letter < mess_len)
+	while(letter > 0)
 	{
+		letter--;
 		encoded[letter] = (message[letter] + sum*letters[message[letter]]) % 95 + 33;
-		letter++;
 	}
-
-
 	encoded[mess_len] = 0;
-	printf("encoded message is:\n'%s'\nsum: %d\n", encoded, sum);
+	printf("\n'%s'\n", encoded);
 
-	strcpy(message, "this will be a reallf fucking good good encoded string.");
-	letter = 0;
 	bzero(letters, 512);
-	sum = 0;
-
+	letter = 0;
 	while(letter < mess_len)
 	{
-		letters[message[letter]]++;
-		sum += letter + message[letter];
+		letters[encoded[letter]]++;
+		sum += letter + encoded[letter];
 		letter++; 
 	}
-	letter = 0;
-
-	while(letter < mess_len)
+	while(letter > 0)
 	{
-		encoded[letter] = (message[letter] + sum*letters[message[letter]]) % 95 + 33;
-		letter++;
+		letter--;
+		message[letter] = (sum*letters[encoded[letter]] - encoded[letter]) % 95 + 33;
 	}
 
-	encoded[mess_len] = 0;
-	printf("encoded message is:\n'%s'\n", encoded);
+	message[mess_len] = 0;
+	printf("'%s'\n", message);
 	return 0;
 }
 
