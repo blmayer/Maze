@@ -1,6 +1,6 @@
 # This is the master makefile, run make to build all projects
 SHELL = /bin/bash
-CFLAGS = -I ./
+CFLAGS = -I ./ -O0
 VERSION = 0.0.1
 export
 
