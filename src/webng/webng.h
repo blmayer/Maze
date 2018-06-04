@@ -5,8 +5,8 @@
  *  holding the response information.
  */
 
-#ifndef LIBWEB_H
-#define LIBWEB_H
+#ifndef WEBNG_H
+#define WEBNG_H
 
 /*
  * Objects definitions
@@ -15,45 +15,45 @@
 /* Our structure that contains the response's data */
 struct response {
 	int status;
-	unsigned char *type;
-	unsigned char *path;
+	char *type;
+	char *path;
 	float vers;
-	unsigned char *serv;
-	unsigned char *date;
-	unsigned char *conn;
-	unsigned char *auth;
-	unsigned char *key;
-	unsigned char *cenc;
-	unsigned char *ctype;
+	char *serv;
+	char *date;
+	char *conn;
+	char *auth;
+	char *key;
+	char *cenc;
+	char *ctype;
 	int clen;
-	unsigned char *ttype;
-	unsigned char *body;
+	char *ttype;
+	char *body;
 };
 
 /* Our structure that contains the request's data */
 struct request {
-	unsigned char *type;
-	unsigned char *url;
+	char *type;
+	char *url;
 	float vers;
-	unsigned char *host;
-	unsigned char *conn;
-	unsigned char *user;
-	unsigned char *auth;
-	unsigned char *key;
-	unsigned char *cenc;
-	unsigned char *ctype;
+	char *host;
+	char *conn;
+	char *user;
+	char *auth;
+	char *key;
+	char *cenc;
+	char *ctype;
 	int clen;
-	unsigned char *ttype;
-	unsigned char *body;
+	char *ttype;
+	char *body;
 };
 
 struct url {
-	unsigned char *proto;
-	unsigned char *ip;
-	unsigned char *port;
-	unsigned char *domain;
-	unsigned char *path;
-	unsigned char *pars;
+	char *proto;
+	char *ip;
+	char *port;
+	char *domain;
+	char *path;
+	char *pars;
 };
 
 /*
@@ -61,34 +61,37 @@ struct url {
  */
 
 /* Reads data in chunked format from a socket */
-unsigned char *read_chunks(int conn);
+char *read_chunks(int conn);
 
 /* Reads data in the HTTP header format from a socket */
-unsigned char *get_header(int conn);
+char *get_header(int conn);
 
 /* Extracts a token from a string */
-unsigned char *get_token(unsigned char *source, char par[]);
+char *get_token(char *source, char par[]);
 
 /* Extracts the path from an URL */
-int parse_URL(char *url, struct url *addr);
+short parse_URL(char *url, struct url *addr);
 
 /* Parses a string and populates the request structure */
-int parse_request(unsigned char *message, struct request *req);
+short parse_request(char *message, struct request *req);
 
 /* Parses a string and populates the reponse structure */
-int parse_response(unsigned char *message, struct response *res);
+short parse_response(char *message, struct response *res);
 
 /* Creates a HTTP header string */
-unsigned char *create_req_header(struct request req);
+char *create_req_header(struct request req);
 
 /* Creates a response with header and optional body */
-unsigned char *create_res_header(struct response res);
+char *create_res_header(struct response res);
+
+/* Parses a list of numbers from a string to an array */
+short *to_key(char *key_list);
 
 /* Reads a message and encodes it */
-unsigned char *encode(unsigned char *message, unsigned char key[]);
+short *encode(char *message, short *key);
 
 /* Reads an encrypted message and decodes it */
-unsigned char *decode(unsigned char *cypher, unsigned char key[]);
+char *decode(int *cypher, int *key);
 
 #endif
 
