@@ -15,35 +15,29 @@
 
 int main(void)
 {
-	/* These are the possible characters in our key */
-	char charset[77] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJK0123456789"
-			   ",./<>?`~[]{}|;:!@#$%^&*()-=_+";
-	
 	/* Get random numbers from computer */
 	FILE *source = fopen("/dev/urandom", "r");
 	
-	/* The key */
-	char key[513];
-	
-	/* Loop generating numbers and select from charset */
-	int i = 0;
-	unsigned int val;
-	while(i < 512)
+	/* Loop generating numbers less than 1928 */
+	short i = 0;
+	short val = 0;
+
+	while(i < 256)
 	{
-		fread(&val, 1, 1, source); 	/* Only one byte is enough */
-		key[i] = charset[val % 76];
+		fread(&val, 2, 1, source);
+		if(val > 1927 || val < 36)
+		{
+			val = 0;
+			continue;
+		}
+		printf("%d ", val);
+		val = 0;
 		i++;
 	}
 	
 	/* Close our source */
 	fclose(source);
 	
-	/* Add terminating zero */
-	key[512] = 0;
-	
-	/* Print key to screen */
-	puts(key);
-
 	return 0;
 }
 
