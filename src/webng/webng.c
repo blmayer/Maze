@@ -1,7 +1,7 @@
 /*
  * ****************************************************************************
  *
- * PROJECT:	libwebng: A library to make encripted requests over the web.
+ * PROJECT:	libwebng: A library to make encrypted requests over the web.
  *
  * AUTHOR:	Brian Mayer blmayer@icloud.com
  *
@@ -15,16 +15,16 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <webng.h>
+#include "webng.h"
 
-unsigned char *read_chunks(int conn)
+char *read_chunks(int conn)
 {
 	/* Here we read and update the body */
 	puts("\tReceiving chunked data...");
 	int chunk_size = 8;		/* The size to be read */
 	int body_size = 1; 		/* This space is for the end 0 */
-	unsigned char *chunk = malloc(chunk_size);
-	unsigned char *body = malloc(body_size);
+	char *chunk = malloc(chunk_size);
+	char *body = malloc(body_size);
 	int pos;
 
 get_chunk:
@@ -76,11 +76,11 @@ get_chunk:
 	return strdup(dest);
 }
 
-unsigned char *get_header(int conn)
+char *get_header(int conn)
 {
 	int pos = 0;
 	int buff_size = 1024;
-	unsigned char *buffer = calloc(buff_size, 1);
+	char *buffer = calloc(buff_size, 1);
 
 	/* This is a loop that will read the data coming from our connection */
 	while(read(conn, buffer + pos, 1) == 1)
@@ -101,31 +101,14 @@ unsigned char *get_header(int conn)
 	}
 
 	/* Duplicate so we can free the memory */
-	unsigned char *dest = strdup(buffer);
+	char *dest = strdup(buffer);
 	free(buffer);
 
 	/* Duplicate to not get lost in function */
 	return strdup(dest);
 }
 
-unsigned char *get_token(unsigned char *source, char par[]){
-	
-	/* Search for the parameter passed */
-	unsigned char *tag = strcasestr(source, par);
-	
-	/* Check if parameter exists in header */
-	if(tag == NULL){
-		return NULL;
-	}
-
-	/* Offset and take the rest */
-	unsigned char *token = strtok(tag + strlen(par), "\r\n");
-	
-	/* Duplicate the token found to not get lost with function */
-	return strdup(token);
-}
-
-int parse_URL(char *url, struct url *addr){
+short parse_URL(char *url, struct url *addr){
 
 	/* Try to match cases http://domain... and //domain... in URL */
 	addr -> proto = strstr(url, "://");
@@ -155,7 +138,7 @@ int parse_URL(char *url, struct url *addr){
 		len = strlen(addr -> path);
 	}
 
-	unsigned char new[len + 2];
+	char new[len + 2];
 	strcpy(new, "/");
 
 	if(len == 0){
@@ -174,7 +157,7 @@ int parse_URL(char *url, struct url *addr){
 	return 0;
 }
 
-int parse_request(unsigned char *message, struct request *req){
+short parse_request(char *message, struct request *req){
 
 	/* Get first line parameters */
 	req -> type = strtok(message, " ");	/* First token is the method */
@@ -256,7 +239,7 @@ int parse_request(unsigned char *message, struct request *req){
 	return 0;
 }
 
-int parse_response(unsigned char *message, struct response *res)
+short parse_response(char *message, struct response *res)
 {
 	/* ---- Get first line parameters ---------------------------------- */
 
@@ -352,7 +335,7 @@ int parse_response(unsigned char *message, struct response *res)
 	return 0;
 }
 
-unsigned char *create_req_header(struct request req){
+char *create_req_header(struct request req){
 	
 	/* ---- Calculate size of the final string ------------------------ */
 
@@ -393,7 +376,7 @@ unsigned char *create_req_header(struct request req){
 	/* ---- Glue them together ----------------------------------------- */
 
 	/* The header string, +1 for the end zero and +2 for blank line */
-	unsigned char header[header_size + 48];
+	char header[header_size + 48];
 	
 	/* Copy all parameters to it */
 	sprintf(header, 
@@ -430,7 +413,7 @@ unsigned char *create_req_header(struct request req){
 	return strdup(header);
 }
 
-unsigned char *create_res_header(struct response res)
+char *create_res_header(struct response res)
 {
 	/* URL request line, includes version, spaces and \r\n */
 	int header_size = 16; 	/* Size of HTTP/1.1 + 5 + \r\n + end zero */
@@ -494,7 +477,7 @@ unsigned char *create_res_header(struct response res)
 	}
 	
 	/* The header string */
-	unsigned char header[header_size + 1];
+	char header[header_size + 1];
 
 	/* Copy all parameters to it */
 	sprintf(header, 
@@ -531,13 +514,30 @@ unsigned char *create_res_header(struct response res)
 	return strdup(header);
 }
 
-unsigned char *encode(unsigned char *message, unsigned char *key){
+short *to_key(char *key_list)
+{
+	static short keys[512] = {0};
+	short i = 0;
+	char *key = strtok(key_list, " ");
+
+	while(key != NULL && i < 512)
+	{
+		keys[i] = atoi(key);
+		printf("%d\n", keys[i]);
+		key = strtok(NULL, " ");
+		i++;
+	}
+
+	return keys;
+}
+
+short *encode(char *message, short *key){
 
 	/* Get length of received message and key */
 	int n = strlen(message);
 	int i = 0;
-	int key_len = strlen(key);
-	unsigned char cipher[n + 1];	/* Add the terminating zero place */
+	short key_len = strlen(key);
+	char cipher[n + 1];	/* Add the terminating zero place */
 	
 	/* Loop changing characters */
 	while(i < n){
@@ -549,13 +549,13 @@ unsigned char *encode(unsigned char *message, unsigned char *key){
 	return strdup(cipher);
 }
 
-unsigned char *decode(unsigned char *cipher, unsigned char *key){
+char *decode(int *cipher, int *key){
 
 	/* Get length of received message and key */
 	int n = strlen(cipher);
 	int i = 0;
 	int key_len = strlen(key);
-	unsigned char message[n + 1];	/* Add the terminating zero place */
+	char message[n + 1];	/* Add the terminating zero place */
 
 	/* Loop changing characters */
 	while(i < n){
