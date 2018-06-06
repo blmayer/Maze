@@ -14,7 +14,7 @@
 #include "aux.h"
 
 /* Receives client's auth parameters and checks */
-int authorization(unsigned char *auth_code); 
+short authorization(unsigned char *auth_code); 
 
 #endif
 

@@ -15,11 +15,12 @@
 
 #include "login.h"
 
-int authorization(unsigned char *auth_code){
-	
+short authorization(unsigned char *auth_code)
+{	
 	/* Here we read the auth code from request and check its validity */
 	char *method = strtok(auth_code, " ");	/* Get the hashing method */
-	if(strcasecmp(method, "Basic") != 0){
+	if(strcasecmp(method, "Basic") != 0)
+	{
 		/* Method not supported */
 		puts("\t\tError authenticating user: unsupported method.");
 		return 501;
@@ -32,15 +33,17 @@ int authorization(unsigned char *auth_code){
 	
 	/* Load our users file */
 	char *users_db = load_file("db/users.txt");
-	if(users_db == NULL) {
+	if(users_db == NULL) 
+	{
 		/* Could not open our file */
 		perror("\t\tError authenticating user");
 		return 500;
 	}
 	
 	/* Check if the user exists in our database */
-	char* db_login = get_token(users_db, login); 	/* user:SHA1(passwd) */
-	if(db_login == NULL) {
+	char* db_login = strstr(users_db, login); 	/* user:SHA1(passwd) */
+	if(db_login == NULL)
+	{
 		/* User doesn't exists, unauthorized */
 		puts("\t\tUser does not exists in database.");
 		return 403;
@@ -52,7 +55,8 @@ int authorization(unsigned char *auth_code){
 	SHA1(passwd, strlen(passwd), enc_passwd);	/* SHA1(passwd) */
 	
 	/* Check if hashes are equal */
-	if(strcmp(db_passwd, enc_passwd) != 0){
+	if(strcmp(db_passwd, enc_passwd) != 0)
+	{
 		/* User exists but is not authorized */
 		puts("\t\tUnauthorized user, wrong password.");
 		return 401;
