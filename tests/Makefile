@@ -5,7 +5,7 @@ export LD_LIBRARY_PATH = ../src/webng/
 export LD_INCLUDE_PATH = ../src/webng/
 
 tests: parse_URL encode_decode parse_request parse_response create_response \
-	encryption to_key
+	encryption split_keys
 
 parse_URL: parse_URL.c
 	$(CC) $^ -o $@ $(LDFLAGS)
@@ -50,7 +50,7 @@ create_response: create_response.c
 	@echo "#---- Running test suite --------------------------#"
 	./$@
 
-to_key: to_key.c
+split_keys: split_keys.c
 	$(CC) $^ -o $@ $(LDFLAGS)
 	@echo "#---- Running test suite --------------------------#"
 	./$@

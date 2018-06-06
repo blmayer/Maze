@@ -7,7 +7,7 @@ int main(void)
 {
 	char list[] = "2345 474 23 7569";
 
-	short *keys = to_key(list);
+	short *keys = split_keys(list);
 
 	if(
 		keys[0] == 2345 && 
