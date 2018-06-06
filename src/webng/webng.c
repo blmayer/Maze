@@ -108,8 +108,8 @@ char *get_header(int conn)
 	return strdup(dest);
 }
 
-short parse_URL(char *url, struct url *addr){
-
+short parse_URL(char *url, struct url *addr)
+{
 	/* Try to match cases http://domain... and //domain... in URL */
 	addr -> proto = strstr(url, "://");
 	if(addr -> proto == NULL){
@@ -157,8 +157,8 @@ short parse_URL(char *url, struct url *addr){
 	return 0;
 }
 
-short parse_request(char *message, struct request *req){
-
+short parse_request(char *message, struct request *req)
+{
 	/* Get first line parameters */
 	req -> type = strtok(message, " ");	/* First token is the method */
 	if(req -> type == NULL)
@@ -335,8 +335,8 @@ short parse_response(char *message, struct response *res)
 	return 0;
 }
 
-char *create_req_header(struct request req){
-	
+char *create_req_header(struct request req)
+{	
 	/* ---- Calculate size of the final string ------------------------ */
 
 	/* URL request line, includes version, spaces and \r\n */
@@ -389,16 +389,19 @@ char *create_req_header(struct request req){
 		req.user, req.conn, req.cenc);
 
 	/* Optional lines */
-	if(req.auth != NULL){
+	if(req.auth != NULL)
+	{
 		sprintf(header + strlen(header), "Authorization: %s\r\n", req.auth);
 	}
-	if(req.clen > 0){
+	if(req.clen > 0)
+	{
 		sprintf(header + strlen(header),
 				"Content-Type: %s\r\n"
 				"Content-Length: %s\r\n",
 				req.ctype, req.clen);
 	}
-	if(req.key != NULL){
+	if(req.key != NULL)
+	{
 		sprintf(header + strlen(header), "Key: %s\r\n", req.key);
 		strcpy(header, encode(header, req.key));
 		strcat(header, "\r\n");
@@ -514,9 +517,9 @@ char *create_res_header(struct response res)
 	return strdup(header);
 }
 
-short *to_key(char *key_list)
+short *split_keys(char *key_list)
 {
-	static short keys[512] = {0};
+	static short keys[512];
 	short i = 0;
 	char *key = strtok(key_list, " ");
 
@@ -531,35 +534,36 @@ short *to_key(char *key_list)
 	return keys;
 }
 
-short *encode(char *message, short *key){
-
+char *encode(char *message, char *key)
+{
 	/* Get length of received message and key */
 	int n = strlen(message);
 	int i = 0;
-	short key_len = strlen(key);
 	char cipher[n + 1];	/* Add the terminating zero place */
 	
 	/* Loop changing characters */
-	while(i < n){
-		cipher[i] = (message[i] ^ key[i % key_len]) + 33;
+	while(i < n)
+	{
+		cipher[i] = (message[i] ^ key[i % 512]) + 33;
 		i++;
 	}
 
 	cipher[n] = 0;	  		/* Add terminating zero */
+
 	return strdup(cipher);
 }
 
-char *decode(int *cipher, int *key){
-
+char *decode(char *cipher, char *key)
+{
 	/* Get length of received message and key */
 	int n = strlen(cipher);
 	int i = 0;
-	int key_len = strlen(key);
 	char message[n + 1];	/* Add the terminating zero place */
 
 	/* Loop changing characters */
-	while(i < n){
-		message[i] = (cipher[i] - 33) ^ key[i % key_len];
+	while(i < n)
+	{
+		message[i] = (cipher[i] - 33) ^ key[i % 512];
 		i++;
 	}
 

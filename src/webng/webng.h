@@ -85,13 +85,13 @@ char *create_req_header(struct request req);
 char *create_res_header(struct response res);
 
 /* Parses a list of numbers from a string to an array */
-short *to_key(char *key_list);
+short *split_keys(char *key_list);
 
 /* Reads a message and encodes it */
-short *encode(char *message, short *key);
+char *encode(char *message, char *key);
 
 /* Reads an encrypted message and decodes it */
-char *decode(int *cypher, int *key);
+char *decode(char *cypher, char *key);
 
 #endif
 
