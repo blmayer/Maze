@@ -56,7 +56,7 @@ int write_log(char *buff){
 	FILE *log_file = fopen("logs/log.txt", "a");
 	
 	if(log_file == NULL){
-		perror("\t\tError oppening file");
+		perror("\t\tError opening file");
 		exit(1);
 	}
 	
@@ -74,17 +74,17 @@ char *date_line(){
     struct tm *cur_time;                /* Obtain current time */
     time_t now = time(NULL);
     cur_time = gmtime(&now);
-    char res_time[30];                  /* Convert to local time format */
+    static char res_time[30]; 		/* Convert to local time format */
 
     /* Date: Fri, 31 Dec 1999 23:59:59 GMT */
     strftime(res_time, 32, "%a, %d %b %Y %X %Z", cur_time);
 
-    return strdup(res_time);
+    return res_time;
 }
 
 char *mime_type(char *path) {
 	
-	char *mime;
+	static char *mime;
 
 	/* Match the extension against some cases */
 	switch(strcmp(strrchr(path, '.'), ".bsog")) {
@@ -122,6 +122,6 @@ char *mime_type(char *path) {
 	}
 	
 	/* Duplicate the token found to not get lost with function */
-	return strdup(mime);
+	return mime;
 }
 
