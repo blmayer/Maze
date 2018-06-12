@@ -20,8 +20,8 @@
 #include <webng.h>
 #include "get.h"
 
-int main(int argc, char *argv[]){
-
+int main(int argc, char *argv[])
+{
 	/* Get URL and port from command line */
 	if(argc != 2)
 	{
@@ -98,7 +98,9 @@ int main(int argc, char *argv[]){
 	/* ---- Read response's body --------------------------------------- */
 
 	/* Populate the response struct */
-	unsigned char *response = get_header(server);
+	char *response = malloc(128);
+	get_header(server, response);
+
 	printf("received\n'%s'\n", response);
 	struct response res = {0};
 	if(parse_response(response, &res) < 0)
@@ -144,8 +146,9 @@ int main(int argc, char *argv[]){
 	if(res.ttype != NULL && strcmp(res.ttype, "chunked") == 0)
 	{
 		/* Here we read and update the body */
-		unsigned char *temp = read_chunks(server);
-		res.body = strdup(temp);
+		char *temp = malloc(1);
+		read_chunks(server, temp);
+		res.body = temp;
 	}
 
 	/* Body read, close the connection */
@@ -157,6 +160,7 @@ int main(int argc, char *argv[]){
 	printf("Body:\n%s\n", res.body);
 	close(server);
 	free(res.body);
+	free(response);
 
 	return 0;
 }

@@ -12,17 +12,19 @@
 
 #include "receive.h"
 
-int send_response(unsigned int cli_conn){
+short send_response(short cli_conn){
 	
 	/* Set the socket timeout */
-	struct timeval timeout = {18, 0};	/* Timeout structure: 3 mins */
+	struct timeval timeout = {180, 0};	/* Timeout structure: 3 mins */
 	setsockopt(cli_conn, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, 18);
  
 	/* Initialize variables for reading the request */
-	unsigned char *buffer = get_header(cli_conn);
+	char *header = malloc(32);	/* Very close to the minimum of 29 */
+	get_header(cli_conn, header);
 
 	/* Check if user didn't send any data and disconnect it */
-	if(strlen(buffer) == 0){
+	if(strlen(header) == 0)
+	{
 		puts("\tUser timed out or disconnected.");
 		return 0;
 	}
@@ -31,10 +33,12 @@ int send_response(unsigned int cli_conn){
 	struct response res = {0};	/* And our response structure */
 	
 	/* Populate our struct with request */
-	if(parse_request(buffer, &req) < 0){
+	if(parse_request(header, &req) < 0)
+	{
 		/* Probably request is encrypted */
 		puts("\tTrying to parse an encrypted request...");
-		if(parse_request(decode(buffer, KEY), &req) < 0){
+		if(parse_request(decode(header, split_keys(KEY)), &req) < 0)
+		{
 			/* Bad request received */
 			puts("\tReceived bad request...");
 			res.status = 400;
@@ -135,6 +139,7 @@ int send_response(unsigned int cli_conn){
 		send_response(cli_conn);
 	}
 
+	free(header);
 	puts("\tDisconnecting user...");
 	
 	return 0;

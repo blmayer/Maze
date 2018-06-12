@@ -61,10 +61,10 @@ struct url {
  */
 
 /* Reads data in chunked format from a socket */
-char *read_chunks(int conn);
+void read_chunks(int conn, char *body);
 
 /* Reads data in the HTTP header format from a socket */
-char *get_header(int conn);
+void get_header(short conn, char *buffer);
 
 /* Extracts a token from a string */
 char *get_token(char *source, char par[]);

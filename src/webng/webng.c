@@ -17,14 +17,13 @@
 #include <string.h>
 #include "webng.h"
 
-char *read_chunks(int conn)
+void read_chunks(int conn, char *body)
 {
 	/* Here we read and update the body */
 	puts("\tReceiving chunked data...");
 	int chunk_size = 8;		/* The size to be read */
 	int body_size = 1; 		/* This space is for the end 0 */
 	char *chunk = malloc(chunk_size);
-	char *body = malloc(body_size);
 	int pos;
 
 get_chunk:
@@ -47,7 +46,7 @@ get_chunk:
 			chunk = realloc(chunk, chunk_size);
 		}
 	}
-	sscanf(chunk, "%x", &pos); 
+	sscanf(chunk, "%x", &pos);	/* Hex of the chunk size */
 	bzero(chunk, chunk_size);
 
 	/* ---- Read chunk ------------------------------------------------- */
@@ -66,27 +65,20 @@ get_chunk:
 		goto get_chunk;
 	}
 
-	/* ---- Sanitize and return ---------------------------------------- */
-
 	free(chunk);
-	body[body_size + 1] = 0;
-	char *dest = strdup(body);
-	free(body);
-
-	return strdup(dest);
 }
 
-char *get_header(int conn)
+void get_header(short conn, char *buffer)
 {
 	int pos = 0;
-	int buff_size = 1024;
-	char *buffer = calloc(buff_size, 1);
+	int buff_size = 32;
 
 	/* This is a loop that will read the data coming from our connection */
 	while(read(conn, buffer + pos, 1) == 1)
 	{	
 		/* Increase pos by 1 to follow the buffer size */
 		pos++;
+		
 		/* The only thing that can break our loop is a blank line */
 		if(strcmp(buffer + pos - 4, "\r\n\r\n") == 0)
 		{
@@ -95,27 +87,23 @@ char *get_header(int conn)
 		
 		if(pos == buff_size)
 		{
-			buff_size += 512;
+			buff_size *= 2;
 			buffer = realloc(buffer, buff_size);
 		}
 	}
-
-	/* Duplicate so we can free the memory */
-	char *dest = strdup(buffer);
-	free(buffer);
-
-	/* Duplicate to not get lost in function */
-	return strdup(dest);
 }
 
 short parse_URL(char *url, struct url *addr)
 {
 	/* Try to match cases http://domain... and //domain... in URL */
 	addr -> proto = strstr(url, "://");
-	if(addr -> proto == NULL){
+	if(addr -> proto == NULL)
+	{
 		/* URL is like www.domain... */
 		addr -> domain = strtok(url, "/:");
-	} else {
+	} 
+	else 
+	{
 		/* Get the protocol */
 		addr -> proto = strtok(url, ":");
 		
