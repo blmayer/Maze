@@ -13,9 +13,9 @@
 #include <webng.h>
 
 /* Declare external variables */
-extern unsigned char *PATH;
+extern char *PATH;
 
 /* Receives client's parameters and sends a file */
-int serve_get(unsigned int conn, struct response res);
+short serve_get(short conn, struct response res);
 
 #endif
