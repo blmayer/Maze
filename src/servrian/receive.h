@@ -17,10 +17,10 @@
 #include "post.h"
 
 /* Global variables from server.c (path to the webpages folder and key) */
-extern unsigned char *PATH;
+extern char *PATH;
 
-/* This function reads tne header and passes it to the right function */
-int send_response(unsigned int cli_conn);
+/* This function reads the header and passes it to the right function */
+short send_response(short cli_conn);
 
 #endif
 
