@@ -5,7 +5,7 @@
  *
  * AUTHOR:	Brian Mayer blmayer@icloud.com
  *
- * Copyright (C) 2018	Brian Lee Mayer
+ * Copyright (C) 2018	Brian Mayer
  *
  * ****************************************************************************
  */
@@ -95,52 +95,47 @@ void get_header(short conn, char *buffer)
 
 short parse_URL(char *url, struct url *addr)
 {
+	/* At first proto looks at the start of the URL */
+	addr -> proto = url;
+	
 	/* Try to match cases http://domain... and //domain... in URL */
-	addr -> proto = strstr(url, "://");
-	if(addr -> proto == NULL)
-	{
-		/* URL is like www.domain... */
-		addr -> domain = strtok(url, "/:");
-	} 
-	else 
-	{
-		/* Get the protocol */
-		addr -> proto = strtok(url, ":");
+	addr -> domain = strstr(url, "://");
+	if(addr -> domain != NULL) {
+		strcpy(addr -> domain, "\0");
+		addr -> domain = addr -> domain + 3;
+	} else {
+		/* URL starts with domain: www.domain... */
+		addr -> domain = url;
+		addr -> proto = NULL;
+	}
+
+	/* Try to find the port */
+	addr -> port = strstr(addr -> domain, ":");
+	if(addr -> port == NULL) {
+		addr -> port = strstr(addr -> domain, "/");
+	} else {
+		/* Writing \0 to delimit URL parts */
+		strcpy(addr -> port, "\0");
+		addr -> port++;
+	}
+	
+	/* Search for a / */
+	addr -> path = strstr(addr -> port, "/");
+	if(addr -> path != NULL) {
+		strcpy(addr -> path, "\0");
+		addr -> path++;
 		
-		/* Advance to next / to get the domain */
-		addr -> domain = strtok(NULL, "/:");
-	}
-
-	/* Get the port if there's one */
-	addr -> port = strtok(NULL, ":/");
-
-	/* Now get the path */
-	addr -> path = strtok(NULL, ":/");
-
-	/* Prepend / to the path in any case */
-	int len;
-
-	if(addr -> path == NULL){
-		len = 0;
+		/* The last is ? */
+		addr -> pars = strstr(addr -> path, "?");
 	} else {
-		len = strlen(addr -> path);
+		addr -> pars = strstr(addr -> port, "?");
 	}
-
-	char new[len + 2];
-	strcpy(new, "/");
-
-	if(len == 0){
-		new[1] = '\0';
-	} else {
-		strcat(new, addr -> path);
+	
+	/* Delimit path */
+	if(addr -> pars != NULL) {
+		strcpy(addr -> pars, "\0");
+		addr -> pars++;
 	}
-
-	/* Get parameters and path from new string */
-	addr -> pars = strstr(new, "?");
-	addr -> path = strdup(new);
-
-	/* Rip off the parameters part */
-	strtok(addr -> path, "?");
 
 	return 0;
 }
