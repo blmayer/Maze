@@ -317,36 +317,29 @@ short parse_response(char *message, struct response *res)
 
 	return 0;
 }
-
-char *create_req_header(struct request req)
-{	
-	/* ---- Calculate size of the final string ------------------------ */
-
+short req_header_len(struct request req)
+{
 	/* URL request line, includes version, spaces and \r\n */
-	int header_size = strlen(req.type) + strlen(req.url) + 12;
+	short header_size = strlen(req.type) + strlen(req.url) + 12;
 
-	/* Host, user agent and conn lines */
-	header_size += strlen(req.host) + strlen(req.user) + strlen(req.conn) + 6;
-	
-	/* Accept line */
-	header_size += strlen(req.cenc) + 2;
+	header_size += 8 + strlen(req.host);	/* Host: \r\n */
+	header_size += 14 + strlen(req.user);	/* User-Agent: \r\n */
+	header_size += 14 + strlen(req.conn);	/* Connection: \r\n */
+	header_size += 10 + strlen(req.cenc);	/* Accept: \r\n */
 	
 	/* And optional lines */
-	if(req.auth != NULL)
-	{
-		header_size += strlen(req.auth) + 17;
+	if(req.auth != NULL) {
+		header_size += 17 + strlen(req.auth);
 	}
-	if(req.key != NULL)
-	{
-		header_size += strlen(req.key) + 7;
+	if(req.key != NULL) {
+		header_size += 7 + strlen(req.key);
 	}
 	
 	/* File length line, if we want */
-	if(req.clen > 0)
-	{
+	if(req.clen > 0) {
 		/* Count the number of digits */
 		int number = req.clen;
-		int digits = 0;
+		short digits = 0;
 		while(number != 0)
 		{
 			number /= 10;
@@ -355,14 +348,13 @@ char *create_req_header(struct request req)
 		header_size += digits + 18;		/* Number of digits */
 		header_size += 14 + strlen(req.ctype);	/* Content Encoding */
 	}
+	return header_size + 1;				/* Terminating zero */
+}
 
-	/* ---- Glue them together ----------------------------------------- */
-
-	/* The header string, +1 for the end zero and +2 for blank line */
-	char header[header_size + 48];
-	
+short create_req_header(struct request req, char *dest)
+{	
 	/* Copy all parameters to it */
-	sprintf(header, 
+	sprintf(dest, 
 		"%s %s HTTP/%.1f\r\n"
 		"Host: %s\r\n"
 		"User-Agent: %s\r\n"
@@ -372,73 +364,82 @@ char *create_req_header(struct request req)
 		req.user, req.conn, req.cenc);
 
 	/* Optional lines */
-	if(req.auth != NULL)
-	{
-		sprintf(header + strlen(header), "Authorization: %s\r\n", req.auth);
+	if(req.auth != NULL) {
+		sprintf(dest + strlen(dest), "Authorization: %s\r\n", req.auth);
 	}
-	if(req.clen > 0)
-	{
-		sprintf(header + strlen(header),
+	if(req.clen > 0) {
+		sprintf(dest + strlen(dest),
 				"Content-Type: %s\r\n"
 				"Content-Length: %s\r\n",
 				req.ctype, req.clen);
 	}
-	if(req.key != NULL)
-	{
-		sprintf(header + strlen(header), "Key: %s\r\n", req.key);
-		strcpy(header, encode(header, req.key));
-		strcat(header, "\r\n");
+	if(req.key != NULL) {
+		sprintf(dest + strlen(dest), "Key: %s\r\n", req.key);
+		strcpy(dest, encode(dest, req.key));
+		strcat(dest, "\r\n");
 	}
-	
-	/* Add blank line */
-	strcat(header, "\r\n");
-	
-	/* Add end zero */
-	header[header_size + 47] = 0;
 
-	return strdup(header);
+	return 0;
 }
 
-char *create_res_header(struct response res)
+short res_header_len(struct response res)
 {
 	/* URL request line, includes version, spaces and \r\n */
 	int header_size = 16; 	/* Size of HTTP/1.1 + 5 + \r\n + end zero */
 
-	/* Make the status line */
-	char *status_line;
-	switch(res.status)
-	{
+	header_size += 10 + strlen(res.serv);	/* Server information line */
+	header_size += 8 + strlen(res.date);	/* Now the server time line */
+	header_size += 14 + strlen(res.conn);	/* Connection: \r\n */
+
+	/* The status text */
+	switch(res.status) {
 	case 200:
-		status_line = "OK";
 		header_size += 4;
 		break;
 	case 400:
-		status_line = "Bad Request";
 		header_size += 13;
 		break;
 	case 404:
-		status_line = "Not Found";
 		header_size += 11;
 		break;
 	case 500:
-		status_line = "Internal Server Error";
 		header_size += 23;
 		break;
 	case 501:
-		status_line = "Not Implemented";
 		header_size += 17;
 		break;
 	}
 
-	/* Server information line */
-	header_size += 10 + strlen(res.serv);
-
-	/* Now the server time line */
-	header_size += 8 + strlen(res.date);
+	/* Mime-type text */
+	switch(strcmp(strrchr(res.path, '.'), ".bsog")) {
+	case 6:
+		header_size += 25;
+		break;
+	case 1:
+		header_size += 24;
+		break;
+	case 2:
+		header_size += 38;
+		break;
+	case 14:
+		header_size += 25;
+		break;
+	case 17:
+		header_size += 29;
+		break;
+	case 7:
+		header_size += 28;
+		break;
+	case 21:
+		header_size += 39;
+		break;
+	default:
+		header_size += 40;
+		break;
+	}
 
 	/* File length line, if we want */
-	if(res.clen > 0)
-	{
+	if(res.clen > 0) {
 		/* Count the number of digits */
 		int number = res.clen;
 		int digits = 0;
@@ -450,54 +451,54 @@ char *create_res_header(struct response res)
 		header_size += 16 + strlen(res.ctype);	/* Content Encoding */
 	}
 	
-	/* Connection line */
-	if(res.conn != NULL)
-	{
-		header_size += strlen(res.conn) + 14;
-	}
+	return header_size + 1;				/* Terminating zero */
+}
 
-	/* Another blank line */
-	if(res.key != NULL)
-	{
-		header_size += 2;
+short create_res_header(struct response res, char *dest)
+{
+	/* Make the status line */
+	char *status_line;
+	switch(res.status) {
+	case 200:
+		status_line = "OK";
+		break;
+	case 400:
+		status_line = "Bad Request";
+		break;
+	case 404:
+		status_line = "Not Found";
+		break;
+	case 500:
+		status_line = "Internal Server Error";
+		break;
+	case 501:
+		status_line = "Not Implemented";
+		break;
 	}
-	
-	/* The header string */
-	char header[header_size + 1];
 
 	/* Copy all parameters to it */
-	sprintf(header, 
+	sprintf(dest, 
 		"HTTP/%.1f %d %s\r\n"
 		"Server: %s\r\n"
 		"Date: %s\r\n", 
-		res.vers, res.status, status_line, res.serv, res.date);
+		"Connection: %s\r\n",
+		res.vers, res.status, status_line, 
+		res.serv, res.date,
+		res.conn);
 
 	/* Optional lines */
-	if(res.clen > 0)
-	{
-		sprintf(header + strlen(header), 
+	if(res.clen > 0) {
+		sprintf(dest + strlen(dest), 
 			"Content-Type: %s\r\nContent-Length: %d\r\n",
 			res.ctype, res.clen);
 	}
 
-	/* Connection line */
-	if(res.conn != NULL)
-	{
-		sprintf(header + strlen(header), "Connection: %s\r\n", res.conn);
-	}
 	/* Encrypt using passed key */
-	if(res.key != NULL)
-	{
-		sprintf(header, "%s\r\n", encode(header, res.key));
+	if(res.key != NULL) {
+		sprintf(dest, "%s\r\n", encode(dest, res.key));
 	}
 	
-	/* Add blank line */
-	strcat(header, "\r\n");
-
-	/* Add end zero */
-	header[header_size] = 0;
-
-	return strdup(header);
+	return 0;
 }
 
 short *split_keys(char *key_list)

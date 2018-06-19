@@ -14,7 +14,7 @@
 
 /* Our structure that contains the response's data */
 struct response {
-	int status;
+	short status;
 	char *type;
 	char *path;
 	float vers;
@@ -67,7 +67,7 @@ void read_chunks(int conn, char *body);
 void get_header(short conn, char *buffer);
 
 /* Extracts a token from a string */
-char *get_token(char *source, char par[]);
+char *get_token(char *source, char *par);
 
 /* Extracts the path from an URL */
 short parse_URL(char *url, struct url *addr);
@@ -78,11 +78,17 @@ short parse_request(char *message, struct request *req);
 /* Parses a string and populates the reponse structure */
 short parse_response(char *message, struct response *res);
 
+/* Calculates a request header size */
+short req_header_len(struct request req);
+
 /* Creates a HTTP header string */
-char *create_req_header(struct request req);
+short create_req_header(struct request req, char *dest);
+
+/* Calculates a response header size */
+short res_header_len(struct response res);
 
 /* Creates a response with header and optional body */
-char *create_res_header(struct response res);
+short create_res_header(struct response res, char *dest);
 
 /* Parses a list of numbers from a string to an array */
 short *split_keys(char *key_list);
