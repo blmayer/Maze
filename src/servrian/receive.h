@@ -14,7 +14,6 @@
 #include <webng.h>
 #include "head.h"
 #include "get.h"
-#include "post.h"
 
 /* Global variables from server.c (path to the webpages folder and key) */
 extern char *PATH;
