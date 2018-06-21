@@ -14,7 +14,7 @@
 #include "aux.h"
 
 /* Receives connection's parameters and server a header */
-int serve_head(unsigned int conn, struct response res);
+short serve_head(short conn, struct response res);
 
 #endif
 

@@ -5,7 +5,7 @@
  *		a response, it takes two arguments: the client's connection
  *		and the file requested in the HEAD message.
  *
- * AUTHOR:	  	Brian Mayer	blmayer@icloud.com
+ * AUTHOR:	Brian Mayer	blmayer@icloud.com
  *
  * Copyright (C) 2018	Brian Lee Mayer
  *
@@ -14,8 +14,8 @@
 
 #include "head.h"
 
-int serve_head(unsigned int conn, struct response res) {
-	
+short serve_head(short conn, struct response res) 
+{	
 	/* Create the status variable */
 	int *status;
 	
@@ -32,7 +32,8 @@ int serve_head(unsigned int conn, struct response res) {
 	}
 	
 	/* Create the head */
-	unsigned char *head = create_res_header(res);
+	char head[res_header_len(res)];
+	create_res_header(res, head);
 	
 	/* Send the head */
 	write(conn, head, strlen(head));
