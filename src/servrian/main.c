@@ -19,11 +19,11 @@
 #include "receive.h"
 
 /* Global variables with default values */
-int PORT = 5000;
-unsigned char *PATH = "webpages";
+short PORT = 5000;
+char *PATH = "webpages/";
 
 /* Opens a TCP socket at the desired port and listens to connections */
-int main(int argc, char *argv[])
+int main(short argc, char *argv[])
 {
 	/* ---- Parsing command line argument ------------------------------ */
 
@@ -33,10 +33,10 @@ int main(int argc, char *argv[])
 	 * -d or --dir to specify a root directory for your webpages.
 	 */
 
-	int arg = 1;
-	while(arg < argc){
+	short arg = 1;
+	while(arg < argc) {
 		/* This means we have at least an argument */
-		switch(strcmp(argv[arg], "--x")){
+		switch(strcmp(argv[arg], "--x")) {
 		case 59:
 		case -16:
 			/* This is the help, print help and quit */
@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 		case 67:
 		case -8:
 			/* This is the port argument, next argument is port */
-			if(argv[arg + 1] != NULL){
+			if(argv[arg + 1] != NULL) {
 				PORT = atoi(argv[arg + 1]);
 				arg++;
 			} else {
@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
 		case 55:
 		case -20:
 			/* This is the port argument, next argument is port */
-			if(argv[arg + 1] != NULL){
+			if(argv[arg + 1] != NULL) {
 				PATH = argv[arg + 1];
 				arg++;
 			} else {
@@ -85,34 +85,27 @@ int main(int argc, char *argv[])
 
 	/* ---- Check if path is valid and contains files ----------------- */
 
-	/* PATH must end with a / */
-	if(strcmp(PATH + strlen(PATH) - 1, "/") != 0){
-		/* Create a temporary variable and append the / */
-		unsigned char temp[strlen(PATH) + 2];
-		sprintf(temp, "%s/", PATH);
-		PATH = strdup(temp);
-	}
-	printf("Using path: %s\n", PATH);
-
 	/* Check if some files exist */
-	unsigned char file_path[strlen(PATH) + 9];
+	char file_path[strlen(PATH) + 9];
 	sprintf(file_path, "%s404.html", PATH); 
-	if(fopen(file_path, "r") == NULL){
+	if(fopen(file_path, "r") == NULL) {
 		printf("File %s not found.\n", file_path);
-		return -1;
+		bzero(PATH, 10);
+		bzero(file_path, 19);
+		exit(-1);
 	}
 	sprintf(file_path, "%s403.html", PATH); 
-	if(fopen(file_path, "r") == NULL){
+	if(fopen(file_path, "r") == NULL) {
 		printf("File %s not found.\n", file_path);
 		return -1;
 	}
 	sprintf(file_path, "%s500.html", PATH); 
-	if(fopen(file_path, "r") == NULL){
+	if(fopen(file_path, "r") == NULL) {
 		printf("File %s not found.\n", file_path);
 		return -1;
 	}
 	sprintf(file_path, "%s501.html", PATH); 
-	if(fopen(file_path, "r") == NULL){
+	if(fopen(file_path, "r") == NULL) {
 		printf("File %s not found.\n", file_path);
 		return -1;
 	}
@@ -120,15 +113,14 @@ int main(int argc, char *argv[])
 	/* ---- Opening a socket ------------------------------------------- */
 
 	/* Initiate a TCP socket */
-	unsigned int server = socket(AF_INET, SOCK_STREAM, 0);
-	if(server < 0){
+	short server = socket(AF_INET, SOCK_STREAM, 0);
+	if(server < 0) {
 		perror("Socket creation failed");
 		return 0;
 	}
 	
 	/* Make server reuse addresses */
 	setsockopt(server, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int));
-	
 	puts("Socket initiated!");
 	
 	/* I like this object now */
@@ -153,11 +145,12 @@ int main(int argc, char *argv[])
 	listen(server, 1);
 	printf("Server is listening on port %d.\n", PORT);
 	
-	while(1){
+	while(1) {
 		puts("Server is waiting for connections.");
 		
 		/* Get the new connection */
-		unsigned int cli_len = sizeof(client), conn;
+		unsigned int cli_len = sizeof(client);
+		short conn;
 		conn = accept(server, (struct sockaddr *)&client, &cli_len);
 		
 		/*  We got a connection! Check if it is OK */
@@ -171,11 +164,12 @@ int main(int argc, char *argv[])
 		pid_t conn_pid = fork();
 		
 		/* Manipulate those processes */
-		if(conn_pid < 0){
+		if(conn_pid < 0) {
 			perror("Couldn't fork");
 		}
 		
-		if(conn_pid == 0){ 		/* This is the child process */
+		if(conn_pid == 0) {
+			/* This is the child process */
 			/* Close the parent connection */
 			close(server);
 			
@@ -190,7 +184,8 @@ int main(int argc, char *argv[])
 			waitpid(conn_pid, NULL, 0);
 			
 			exit(0);
-		} else { 			/* This is the master process */
+		} else {
+			/* This is the master process */
 			/* Close the connection */
 			close(conn);
 		}
