@@ -13,7 +13,7 @@
 #include <webng.h>
 
 /* Receives client's parameters and sends a file */
-int send_get(int conn, struct request req);
+short send_get(short conn, struct request req);
 
 #endif
 
