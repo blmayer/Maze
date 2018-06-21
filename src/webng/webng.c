@@ -31,17 +31,17 @@ get_chunk:
 	/* ---- Determine chunk size --------------------------------------- */
 
 	pos = 0;
-	while(read(conn, chunk + pos, 1) == 1){
+	while(read(conn, chunk + pos, 1) == 1) {
 		
 		/* The only thing that can break our loop is a line break */
-		if(strcmp(chunk + pos, "\n") == 0){ 
+		if(strcmp(chunk + pos, "\n") == 0) { 
 			break;
 		}
 		
 		/* Increase pos by 1 to follow the buffer size */
 		pos++;
 		
-		if(pos == chunk_size){
+		if(pos == chunk_size) {
 			chunk_size += 8;
 			chunk = realloc(chunk, chunk_size);
 		}
@@ -51,7 +51,7 @@ get_chunk:
 
 	/* ---- Read chunk ------------------------------------------------- */
 	
-	if(pos > 0){
+	if(pos > 0) {
 		/* Allocate the size needed and read the chunk to body */
 		body_size += pos;
 		body = realloc(body, body_size);
@@ -74,19 +74,16 @@ void get_header(short conn, char *buffer)
 	int buff_size = 32;
 
 	/* This is a loop that will read the data coming from our connection */
-	while(read(conn, buffer + pos, 1) == 1)
-	{	
+	while(read(conn, buffer + pos, 1) == 1) {	
 		/* Increase pos by 1 to follow the buffer size */
 		pos++;
 		
 		/* The only thing that can break our loop is a blank line */
-		if(strcmp(buffer + pos - 4, "\r\n\r\n") == 0)
-		{
+		if(strcmp(buffer + pos - 4, "\r\n\r\n") == 0) {
 			break;
 		}
 		
-		if(pos == buff_size)
-		{
+		if(pos == buff_size) {
 			buff_size *= 2;
 			buffer = realloc(buffer, buff_size);
 		}
@@ -144,8 +141,7 @@ short parse_request(char *message, struct request *req)
 {
 	/* Get first line parameters */
 	req -> type = strtok(message, " ");	/* First token is the method */
-	if(req -> type == NULL)
-	{
+	if(req -> type == NULL) {
 		puts("\tCould not parse the method.");
 		return -1;
 	}
@@ -155,7 +151,7 @@ short parse_request(char *message, struct request *req)
 
 	/* Due to atof we need to test for a NULL pointer */
 	char *ver = strtok(NULL, "\r\n");
-	if(ver != NULL){
+	if(ver != NULL) {
 		req -> vers = atof(ver); 	/* Lastly the HTTP version */
 	} else {
 		puts("\tCould not parse header's version.");
@@ -165,53 +161,44 @@ short parse_request(char *message, struct request *req)
 	/* Put pointer in next line */
 	char *temp = strtok(NULL, "\r\n");
 	
-	while(temp != NULL)
-	{
+	while(temp != NULL) {
 		/* Keep advancing in string getting some parameters */
-		if(strncmp(temp, "Host: ", 6) == 0)
-		{
+		if(strncmp(temp, "Host: ", 6) == 0) {
 			req -> host = temp + 6;
 			temp = strtok(NULL, "\r\n");
 			continue;
 		}
-		if(strncmp(temp, "User-Agent: ", 12) == 0)
-		{
+		if(strncmp(temp, "User-Agent: ", 12) == 0) {
 			req -> user = temp + 12;
 			temp = strtok(NULL, "\r\n");
 			continue;
 		}
-		if(strncmp(temp, "Authorization: ", 15) == 0)
-		{
+		if(strncmp(temp, "Authorization: ", 15) == 0) {
 			req -> auth = temp + 15;
 			temp = strtok(NULL, "\r\n");
 			continue;
 		}
-		if(strncmp(temp, "Content-Length: ", 16) == 0)
-		{
+		if(strncmp(temp, "Content-Length: ", 16) == 0) {
 			req -> clen = atoi(temp + 16);
 			temp = strtok(NULL, "\r\n");
 			continue;
 		}
-		if(strncmp(temp, "Content-Type: ", 14) == 0)
-		{
+		if(strncmp(temp, "Content-Type: ", 14) == 0) {
 			req -> ctype = temp + 14;
 			temp = strtok(NULL, "\r\n");
 			continue;
 		}
-		if(strncmp(temp, "Content-Encoding: ", 18) == 0)
-		{
+		if(strncmp(temp, "Content-Encoding: ", 18) == 0) {
 			req -> cenc = temp + 18;
 			temp = strtok(NULL, "\r\n");
 			continue;
 		}
-		if(strncmp(temp, "Connection: ", 12) == 0)
-		{
+		if(strncmp(temp, "Connection: ", 12) == 0) {
 			req -> conn = temp + 12;
 			temp = strtok(NULL, "\r\n");
 			continue;
 		}
-		if(strncmp(temp, "Key: ", 5) == 0)
-		{
+		if(strncmp(temp, "Key: ", 5) == 0) {
 			req -> key = temp + 5;
 			temp = strtok(NULL, "\r\n");
 			continue;
@@ -228,26 +215,20 @@ short parse_response(char *message, struct response *res)
 
 	/* Due to atof we need to test for a NULL pointer */
 	char *ver = strtok(message, " ");
-	if(ver != NULL)
-	{
+	if(ver != NULL) {
 		/* The HTTP version */
 		res -> vers = atof(ver + 5);
-	} 
-	else
-	{
+	} else {
 		puts("\tCould not parse header's version.");
 		return -1;
 	}
 
 	/* Advance to the status */
 	char *stat = strtok(NULL, " ");
-	if(stat != NULL)
-	{
+	if(stat != NULL) {
 		/* Lastly the HTTP status */
 		res -> status = atoi(stat);
-	} 
-	else 
-	{
+	} else {
 		puts("\tCould not parse header's status.");
 		return -1;
 	}
@@ -255,59 +236,49 @@ short parse_response(char *message, struct response *res)
 	/* Put pointer in next line */
 	char *temp = strtok(NULL, "\r\n");
 	
-	while(temp != NULL)
-	{
+	while(temp != NULL) {
 		/* Keep advancing in string getting some parameters */
-		if(strncmp(temp, "Server: ", 8) == 0)
-		{
+		if(strncmp(temp, "Server: ", 8) == 0) { 
 			res -> serv = temp + 8;
 			temp = strtok(NULL, "\r\n");
 			continue;
 		}
-		if(strncmp(temp, "Date: ", 6) == 0)
-		{
+		if(strncmp(temp, "Date: ", 6) == 0) {
 			res -> date = temp + 6;
 			temp = strtok(NULL, "\r\n");
 			continue;
 		}
-		if(strncmp(temp, "Authorization: ", 15) == 0)
-		{
+		if(strncmp(temp, "Authorization: ", 15) == 0) {
 			res -> auth = temp + 15;
 			temp = strtok(NULL, "\r\n");
 			continue;
 		}
-		if(strncmp(temp, "Content-Length: ", 16) == 0)
-		{
+		if(strncmp(temp, "Content-Length: ", 16) == 0) {
 			res -> clen = atoi(temp + 16);
 			temp = strtok(NULL, "\r\n");
 			continue;
 		}
-		if(strncmp(temp, "Content-Type: ", 14) == 0)
-		{
+		if(strncmp(temp, "Content-Type: ", 14) == 0) {
 			res -> ctype = temp + 14;
 			temp = strtok(NULL, "\r\n");
 			continue;
 		}
-		if(strncmp(temp, "Content-Encoding: ", 18) == 0)
-		{
+		if(strncmp(temp, "Content-Encoding: ", 18) == 0) {
 			res -> cenc = temp + 18;
 			temp = strtok(NULL, "\r\n");
 			continue;
 		}
-		if(strncmp(temp, "Connection: ", 12) == 0)
-		{
+		if(strncmp(temp, "Connection: ", 12) == 0) {
 			res -> conn = temp + 12;
 			temp = strtok(NULL, "\r\n");
 			continue;
 		}
-		if(strncmp(temp, "Transfer-Encoding: ", 19) == 0)
-		{
+		if(strncmp(temp, "Transfer-Encoding: ", 19) == 0) {
 			res -> ttype = temp + 19;
 			temp = strtok(NULL, "\r\n");
 			continue;
 		}
-		if(strncmp(temp, "Key: ", 5) == 0)
-		{
+		if(strncmp(temp, "Key: ", 5) == 0) {
 			res -> key = temp + 5;
 			temp = strtok(NULL, "\r\n");
 			continue;
@@ -340,8 +311,7 @@ short req_header_len(struct request req)
 		/* Count the number of digits */
 		int number = req.clen;
 		short digits = 0;
-		while(number != 0)
-		{
+		while(number != 0) {
 			number /= 10;
 			digits++;
 		}
@@ -385,64 +355,18 @@ short create_req_header(struct request req, char *dest)
 short res_header_len(struct response res)
 {
 	/* URL request line, includes version, spaces and \r\n */
-	int header_size = 16; 	/* Size of HTTP/1.1 + 5 + \r\n + end zero */
+	short header_size = 14; 	/* Size of HTTP/1.1 + xxx + \r\n */
 
+	header_size += 1 + strlen(res.stext);	/* Status text part */
 	header_size += 10 + strlen(res.serv);	/* Server information line */
 	header_size += 8 + strlen(res.date);	/* Now the server time line */
 	header_size += 14 + strlen(res.conn);	/* Connection: \r\n */
-
-	/* The status text */
-	switch(res.status) {
-	case 200:
-		header_size += 4;
-		break;
-	case 400:
-		header_size += 13;
-		break;
-	case 404:
-		header_size += 11;
-		break;
-	case 500:
-		header_size += 23;
-		break;
-	case 501:
-		header_size += 17;
-		break;
-	}
-
-	/* Mime-type text */
-	switch(strcmp(strrchr(res.path, '.'), ".bsog")) {
-	case 6:
-		header_size += 25;
-		break;
-	case 1:
-		header_size += 24;
-		break;
-	case 2:
-		header_size += 38;
-		break;
-	case 14:
-		header_size += 25;
-		break;
-	case 17:
-		header_size += 29;
-		break;
-	case 7:
-		header_size += 28;
-		break;
-	case 21:
-		header_size += 39;
-		break;
-	default:
-		header_size += 40;
-		break;
-	}
 
 	/* File length line, if we want */
 	if(res.clen > 0) {
 		/* Count the number of digits */
 		int number = res.clen;
-		int digits = 0;
+		short digits = 0;
 		while(number != 0){
 			number /= 10;
 			digits++;
@@ -451,40 +375,24 @@ short res_header_len(struct response res)
 		header_size += 16 + strlen(res.ctype);	/* Content Encoding */
 	}
 	
+	/* Key line */
+	if(res.key != NULL) {
+		header_size += 7 + strlen(res.key);
+	}
+
 	return header_size + 1;				/* Terminating zero */
 }
 
 short create_res_header(struct response res, char *dest)
 {
-	/* Make the status line */
-	char *status_line;
-	switch(res.status) {
-	case 200:
-		status_line = "OK";
-		break;
-	case 400:
-		status_line = "Bad Request";
-		break;
-	case 404:
-		status_line = "Not Found";
-		break;
-	case 500:
-		status_line = "Internal Server Error";
-		break;
-	case 501:
-		status_line = "Not Implemented";
-		break;
-	}
-
 	/* Copy all parameters to it */
 	sprintf(dest, 
-		"HTTP/%.1f %d %s\r\n"
-		"Server: %s\r\n"
-		"Date: %s\r\n", 
-		"Connection: %s\r\n",
-		res.vers, res.status, status_line, 
-		res.serv, res.date,
-		res.conn);
+		"HTTP/%.1f %hd %s\r\n"
+		"Server: %s\r\nDate: %s\r\nConnection: %s\r\n",
+		res.vers, res.status, res.stext, 
+		res.serv, res.date, res.conn
+	);
+
 
 	/* Optional lines */
 	if(res.clen > 0) {
@@ -507,8 +415,7 @@ short *split_keys(char *key_list)
 	short i = 0;
 	char *key = strtok(key_list, " ");
 
-	while(key != NULL && i < 512)
-	{
+	while(key != NULL && i < 512) {
 		keys[i] = atoi(key);
 		printf("%d\n", keys[i]);
 		key = strtok(NULL, " ");
@@ -526,8 +433,7 @@ char *encode(char *message, char *key)
 	char cipher[n + 1];	/* Add the terminating zero place */
 	
 	/* Loop changing characters */
-	while(i < n)
-	{
+	while(i < n) {
 		cipher[i] = (message[i] ^ key[i % 512]) + 33;
 		i++;
 	}
@@ -545,8 +451,7 @@ char *decode(char *cipher, char *key)
 	char message[n + 1];	/* Add the terminating zero place */
 
 	/* Loop changing characters */
-	while(i < n)
-	{
+	while(i < n) {
 		message[i] = (cipher[i] - 33) ^ key[i % 512];
 		i++;
 	}

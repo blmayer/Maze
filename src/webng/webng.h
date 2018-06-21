@@ -15,6 +15,7 @@
 /* Our structure that contains the response's data */
 struct response {
 	short status;
+	char *stext;
 	char *type;
 	char *path;
 	float vers;
