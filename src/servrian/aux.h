@@ -20,11 +20,13 @@ int file_size(char *path);
 
 char *load_file(char *path);
 
-int write_log(char buff[512]);
+short write_log(char buff[512]);
 
 /* Header processing tools */
 
 char *date_line();
+
+char *status_text(short status);
 
 char *mime_type(char *ext);
 

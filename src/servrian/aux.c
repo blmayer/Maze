@@ -12,8 +12,8 @@
 
 /* File operations definitions */
 
-int file_size(char *path) {
-	
+int file_size(char *path) 
+{	
 	/* Get the length of the file requested */
 	FILE *page_file = fopen(path, "r");
 	
@@ -29,10 +29,11 @@ int file_size(char *path) {
 	return page_size;
 }
 
-int write_log(char *buff){
+short write_log(char *buff)
+{
 	FILE *log_file = fopen("logs/log.txt", "a");
 	
-	if(log_file == NULL){
+	if(log_file == NULL) {
 		perror("\t\tError opening file");
 		exit(1);
 	}
@@ -45,8 +46,8 @@ int write_log(char *buff){
 
 /* Header processing tools */
 
-char *date_line(){
-
+char *date_line()
+{
     /* Get the current time in the correct format */
     struct tm *cur_time;                /* Obtain current time */
     time_t now = time(NULL);
@@ -59,46 +60,64 @@ char *date_line(){
     return res_time;
 }
 
-char *mime_type(char *path) {
-	
-	static char *mime;
+char *status_text(short status)
+{
+	/* Make the status line */
+	static char *status_line;
+	switch(status) {
+	case 200:
+		status_line = "OK";
+		break;
+	case 400:
+		status_line = "Bad Request";
+		break;
+	case 404:
+		status_line = "Not Found";
+		break;
+	case 500:
+		status_line = "Internal Server Error";
+		break;
+	case 501:
+		status_line = "Not Implemented";
+		break;
+	default:
+		status_line = "Unknown";
+	}
 
+	return status_line;
+}
+
+char *mime_type(char *path) 
+{	
 	/* Match the extension against some cases */
+	static char *mime;
 	switch(strcmp(strrchr(path, '.'), ".bsog")) {
 	case 6:
 		mime = "text/html";
 		break;
-	
 	case 1:
 		mime = "text/css";
 		break;
-	
 	case 2:
 		mime = "application/javascript";
 		break;
-	
 	case 14:
 		mime = "image/png";
 		break;
-	
 	case 17:
 		mime = "image/svg+xml";
 		break;
-	
 	case 7:
 		mime = "image/x-icon";
 		break;
-	
 	case 21:
 		mime = "application/x-font-woff";
 		break;
-	
 	default:
 		mime = "application/octet-stream";
 		break;
 	}
 	
-	/* Duplicate the token found to not get lost with function */
 	return mime;
 }
 
