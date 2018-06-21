@@ -9,15 +9,14 @@
  */
 
 #include "get.h"
-#include "login.h"
 
 short serve_get(short conn, struct response res)
 {
 	/* If the user sends the token respond with the correct page */
-	if(res.auth != NULL) {
-		/* Check authorization cases */
-		res.status = authorization(res.auth);
-	}
+	// if(res.auth != NULL) {
+	// 	/* Check authorization cases */
+	// 	res.status = authorization(res.auth);
+	// }
 
 	/* ---- Update path with the web pages directory ------------------- */
 
@@ -48,7 +47,7 @@ short serve_get(short conn, struct response res)
 
 prepend:
 	/* Prepend webpages path to the path */
-	puts("Prepending PATH.");
+	puts("\tPrepending PATH.");
 	char prep[strlen(res.path) + strlen(PATH) + 1];
 	sprintf(prep, "%s%s", PATH, res.path);
 	res.path = prep;
@@ -86,13 +85,18 @@ prepend:
 		res.conn = "Keep-Alive";
 	}
 
+	res.stext = status_text(res.status);	/* Write the status text */
 	res.ctype = mime_type(res.path);	/* Update the content type */
 	res.clen = page_size;			/* And the content length */
 	res.date = date_line();			/* Put the date line */
 
 	/* Create the head */
-	unsigned char *response = create_res_header(res);
+	char response[res_header_len(res)];
+	create_res_header(res, response);
+
 	write(conn, response, strlen(response));	/* Send response */
+	write(conn, "\r\n", 2);				/* Send blank line */
+
 	if(res.key != NULL) {
 		/* Send an encrypted body */
 		write(conn, encode(res.body, res.key), res.clen);

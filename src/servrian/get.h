@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <webng.h>
+#include "aux.h"
 
 /* Declare external variables */
 extern char *PATH;
