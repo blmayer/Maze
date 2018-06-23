@@ -58,7 +58,7 @@ struct url {
 };
 
 /*
- * Funtion prototypes
+ * Function prototypes
  */
 
 /* Reads data in chunked format from a socket */
@@ -76,7 +76,7 @@ short parse_URL(char *url, struct url *addr);
 /* Parses a string and populates the request structure */
 short parse_request(char *message, struct request *req);
 
-/* Parses a string and populates the reponse structure */
+/* Parses a string and populates the response structure */
 short parse_response(char *message, struct response *res);
 
 /* Calculates a request header size */
@@ -95,10 +95,10 @@ short create_res_header(struct response res, char *dest);
 short *split_keys(char *key_list);
 
 /* Reads a message and encodes it */
-char *encode(char *message, char *key);
+short encode(char *message, char *key);
 
 /* Reads an encrypted message and decodes it */
-char *decode(char *cypher, char *key);
+short decode(char *cypher, char *key);
 
 #endif
 

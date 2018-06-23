@@ -117,17 +117,19 @@ short parse_URL(char *url, struct url *addr)
 	}
 	
 	/* Search for a / */
-	addr -> path = strstr(addr -> port, "/");
-	if(addr -> path != NULL) {
-		strcpy(addr -> path, "\0");
-		addr -> path++;
-		
-		/* The last is ? */
-		addr -> pars = strstr(addr -> path, "?");
-	} else {
-		addr -> pars = strstr(addr -> port, "?");
+	if(addr -> port != NULL) {
+		addr -> path = strstr(addr -> port, "/");
+		if(addr -> path != NULL) {
+			strcpy(addr -> path, "\0");
+			addr -> path++;
+			
+			/* The last is ? */
+			addr -> pars = strstr(addr -> path, "?");
+		} else {
+			addr -> pars = strstr(addr -> port, "?");
+		}
 	}
-	
+
 	/* Delimit path */
 	if(addr -> pars != NULL) {
 		strcpy(addr -> pars, "\0");
@@ -345,7 +347,7 @@ short create_req_header(struct request req, char *dest)
 	}
 	if(req.key != NULL) {
 		sprintf(dest + strlen(dest), "Key: %s\r\n", req.key);
-		strcpy(dest, encode(dest, req.key));
+		encode(dest, req.key);
 		strcat(dest, "\r\n");
 	}
 
@@ -425,7 +427,7 @@ short *split_keys(char *key_list)
 	return keys;
 }
 
-char *encode(char *message, char *key)
+short encode(char *message, char *key)
 {
 	/* Get length of received message and key */
 	int n = strlen(message);
@@ -440,10 +442,10 @@ char *encode(char *message, char *key)
 
 	cipher[n] = 0;	  		/* Add terminating zero */
 
-	return strdup(cipher);
+	return i;
 }
 
-char *decode(char *cipher, char *key)
+short decode(char *cipher, char *key)
 {
 	/* Get length of received message and key */
 	int n = strlen(cipher);
@@ -458,6 +460,6 @@ char *decode(char *cipher, char *key)
 
 	message[n] = 0;	  		/* Add terminating zero */
 
-	return strdup(message);
+	return i;
 }
 
