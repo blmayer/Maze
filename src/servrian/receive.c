@@ -12,36 +12,45 @@
 
 #include "receive.h"
 
-short send_response(short cli_conn){
-	
+short send_response(int cli_conn)
+{
 	/* Set the socket timeout */
 	struct timeval timeout = {180, 0};	/* Timeout structure: 3 mins */
 	setsockopt(cli_conn, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, 18);
  
 	/* Initialize variables for reading the request */
-	char *header = malloc(32);	/* Very close to the minimum of 29 */
-	get_header(cli_conn, header);
+	struct request req;		/* Create our request structure */
+	struct response res;		/* And our response structure */
+	char *header;
+
+	/* ---- Read the request and respond ------------------------------ */
+
+respond:
+	/* Prepare variables to receive data */
+	header = realloc(header, 32);
+	bzero(&req, sizeof(struct request));
+	bzero(&res, sizeof(struct response));
+	bzero(header, 32);
 
 	/* Check if user didn't send any data and disconnect it */
+	get_header(cli_conn, header);		/* Read request */
 	if(strlen(header) == 0) {
 		puts("\tUser timed out or disconnected.");
 		return 0;
 	}
 
-	struct request req = {0};	/* Create our request structure */
-	struct response res = {0};	/* And our response structure */
-	
 	/* Populate our struct with request */
 	if(parse_request(header, &req) < 0) {
 		/* Probably request is encrypted */
 		puts("\tTrying to parse an encrypted request...");
-		if(parse_request(decode(header, KEY), &req) < 0) {
+		decode(header, KEY);
+		if(parse_request(header, &req) < 0) {
 			/* Bad request received */
 			puts("\tReceived bad request...");
 			res.status = 400;
 		}
 	}
-	
+
 	/* Print values for checking */
 	puts("\tParsed:");
 	printf("\tPath: %s\n", req.url);
@@ -52,7 +61,7 @@ short send_response(short cli_conn){
 	printf("\tContent Length: %d\n", req.clen);
 	printf("\tAuthorization: %s\n", req.auth);
 	printf("\tKey: %s\n", req.key);
-	
+
 	/* Populate the response struct based on the request struct */
 	res.type = req.type;
 	res.path = req.url;
@@ -116,14 +125,14 @@ short send_response(short cli_conn){
 	}
 
 	/* Close connection depending on the case */
-	if(strcmp(res.conn, "Close") != 0 || res.vers > 1) {
+	if(!strcmp(res.conn, "Close") == 0 && res.vers > 1) {
 		puts("\tReceiving again...");
-		send_response(cli_conn);
+		goto respond;
 	}
 
 	free(header);
 	puts("\tDisconnecting user...");
-	
+
 	return 0;
 }
 

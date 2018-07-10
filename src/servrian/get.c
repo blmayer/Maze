@@ -68,14 +68,14 @@ prepend:
 	}
 	
 	fseek(page_file, 0, SEEK_END);		/* Seek to the end */
-	int page_size = ftell(page_file);	/* This position's the size */
+	res.clen = ftell(page_file);		/* This position's the size */
 	rewind(page_file);			/* Go back to the start */
 
 	/* Read it all in one operation and close */
-	char buff[page_size + 1];
-	fread(buff, page_size, sizeof(char), page_file);
+	char buff[res.clen + 1];
+	fread(buff, res.clen, sizeof(char), page_file);
 	fclose(page_file);			/* Close the file */
-	buff[page_size] = 0;			/* Add the terminating zero */
+	buff[res.clen] = 0;			/* Add the terminating zero */
 	res.body = buff;
 
 	/* ---- Header creation part --------------------------------------- */
@@ -87,7 +87,6 @@ prepend:
 
 	res.stext = status_text(res.status);	/* Write the status text */
 	res.ctype = mime_type(res.path);	/* Update the content type */
-	res.clen = page_size;			/* And the content length */
 	res.date = date_line();			/* Put the date line */
 
 	/* Create the head */
@@ -99,10 +98,9 @@ prepend:
 
 	if(res.key != NULL) {
 		/* Send an encrypted body */
-		write(conn, encode(res.body, res.key), res.clen);
-	} else {
-		write(conn, res.body, res.clen);
+		encode(res.body, res.key);
 	}
+	write(conn, res.body, res.clen);
 
 	printf("\tFile %s served.\n", res.path);
 	

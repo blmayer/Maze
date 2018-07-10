@@ -113,7 +113,7 @@ int main(short argc, char *argv[])
 	/* ---- Opening a socket ------------------------------------------- */
 
 	/* Initiate a TCP socket */
-	short server = socket(AF_INET, SOCK_STREAM, 0);
+	int server = socket(AF_INET, SOCK_STREAM, 0);
 	if(server < 0) {
 		perror("Socket creation failed");
 		return 0;
@@ -137,20 +137,21 @@ int main(short argc, char *argv[])
 		close(server);
 		return 0;
 	}
-	puts("Bind successfull.");
+	puts("Bind successful.");
 	
 	/* ---- Listen to incoming connections  ---------------------------- */
 
 	/* Now we listen */
-	listen(server, 1);
+	listen(server, 10);
+	int cli_len;
+	int conn;
 	printf("Server is listening on port %d.\n", PORT);
 	
 	while(1) {
 		puts("Server is waiting for connections.");
 		
 		/* Get the new connection */
-		unsigned int cli_len = sizeof(client);
-		short conn;
+		cli_len = sizeof(client);
 		conn = accept(server, (struct sockaddr *)&client, &cli_len);
 		
 		/*  We got a connection! Check if it is OK */
@@ -173,25 +174,27 @@ int main(short argc, char *argv[])
 			/* Close the parent connection */
 			close(server);
 			
+			//printf("Child %d\n", getpid());
 			/* Process the response */
 			send_response(conn);
 			
 			/* Close the client socket, not needed anymore */
-			close(conn);
+			//close(conn);
 			puts("Client connection closed.");
 			
 			/* Exit the child process */
-			waitpid(conn_pid, NULL, 0);
+			//waitpid(conn_pid, NULL, 0);
 			
 			exit(0);
 		} else {
 			/* This is the master process */
 			/* Close the connection */
+			//shutdown(conn, 2);
 			close(conn);
+			puts("Master connection closed.");
 		}
 	}
 	
-	close(server);
 	puts("End of program.");
 	return 0;
 }

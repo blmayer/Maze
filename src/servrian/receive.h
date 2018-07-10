@@ -19,7 +19,7 @@
 extern char *PATH;
 
 /* This function reads the header and passes it to the right function */
-short send_response(short cli_conn);
+short send_response(int cli_conn);
 
 #endif
 
