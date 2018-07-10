@@ -68,18 +68,21 @@ get_chunk:
 	free(chunk);
 }
 
-void get_header(short conn, char *buffer)
+void get_header(int conn, char *buffer)
 {
 	int pos = 0;
 	int buff_size = 32;
+	puts("Trying to read.");
 
 	/* This is a loop that will read the data coming from our connection */
 	while(read(conn, buffer + pos, 1) == 1) {	
 		/* Increase pos by 1 to follow the buffer size */
 		pos++;
-		
 		/* The only thing that can break our loop is a blank line */
 		if(strcmp(buffer + pos - 4, "\r\n\r\n") == 0) {
+			/* Put zero at end and adjust buffer size */
+			buffer = realloc(buffer, pos + 1);
+			buffer[pos] = '\0';
 			break;
 		}
 		

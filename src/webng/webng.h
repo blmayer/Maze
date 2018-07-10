@@ -65,7 +65,7 @@ struct url {
 void read_chunks(int conn, char *body);
 
 /* Reads data in the HTTP header format from a socket */
-void get_header(short conn, char *buffer);
+void get_header(int conn, char *buffer);
 
 /* Extracts a token from a string */
 char *get_token(char *source, char *par);
