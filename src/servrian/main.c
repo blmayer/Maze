@@ -33,8 +33,7 @@ int main(short argc, char *argv[])
 	 * -d or --dir to specify a root directory for your webpages.
 	 */
 
-	short arg = 1;
-	while(arg < argc) {
+	for(arg = 1; arg < argc; arg++) {
 		/* This means we have at least an argument */
 		switch(strcmp(argv[arg], "--x")) {
 		case 59:
@@ -70,7 +69,7 @@ int main(short argc, char *argv[])
 		
 		case 55:
 		case -20:
-			/* This is the port argument, next argument is port */
+			/* This is the path argument, next argument is path */
 			if(argv[arg + 1] != NULL) {
 				PATH = argv[arg + 1];
 				arg++;
@@ -80,34 +79,48 @@ int main(short argc, char *argv[])
 				return -1;
 			}
 		}
-		arg++;
 	}
 
 	/* ---- Check if path is valid and contains files ----------------- */
 
-	/* Check if some files exist */
-	char file_path[strlen(PATH) + 9];
-	sprintf(file_path, "%s404.html", PATH); 
-	if(fopen(file_path, "r") == NULL) {
-		printf("File %s not found.\n", file_path);
-		bzero(PATH, 10);
-		bzero(file_path, 19);
-		exit(-1);
-	}
-	sprintf(file_path, "%s403.html", PATH); 
-	if(fopen(file_path, "r") == NULL) {
-		printf("File %s not found.\n", file_path);
-		return -1;
-	}
-	sprintf(file_path, "%s500.html", PATH); 
-	if(fopen(file_path, "r") == NULL) {
-		printf("File %s not found.\n", file_path);
-		return -1;
-	}
-	sprintf(file_path, "%s501.html", PATH); 
-	if(fopen(file_path, "r") == NULL) {
-		printf("File %s not found.\n", file_path);
-		return -1;
+	char temp[strlen(PATH) + 2];
+
+	/* Using a block to free variables */
+	{
+		/* Append / to the path */
+		pathlen = strlen(PATH);
+		if(PATH + pathlen != '/') {
+			sprintf(temp, "%s/", PATH);
+			PATH = temp;
+		}
+		
+		/* Check if some files exist */
+		char file_path[pathlen + 10];
+		sprintf(file_path, "%s400.html", PATH); 
+		if(fopen(file_path, "r") == NULL) {
+			printf("File %s not found.\n", file_path);
+			exit(-1);
+		}
+		sprintf(file_path, "%s403.html", PATH); 
+		if(fopen(file_path, "r") == NULL) {
+			printf("File %s not found.\n", file_path);
+			exit(-1);
+		}
+		sprintf(file_path, "%s404.html", PATH); 
+		if(fopen(file_path, "r") == NULL) {
+			printf("File %s not found.\n", file_path);
+			return -1;
+		}
+		sprintf(file_path, "%s500.html", PATH); 
+		if(fopen(file_path, "r") == NULL) {
+			printf("File %s not found.\n", file_path);
+			return -1;
+		}
+		sprintf(file_path, "%s501.html", PATH); 
+		if(fopen(file_path, "r") == NULL) {
+			printf("File %s not found.\n", file_path);
+			return -1;
+		}
 	}
 
 	/* ---- Opening a socket ------------------------------------------- */
@@ -179,7 +192,7 @@ int main(short argc, char *argv[])
 			send_response(conn);
 			
 			/* Close the client socket, not needed anymore */
-			//close(conn);
+			close(conn);
 			puts("Client connection closed.");
 			
 			/* Exit the child process */
@@ -189,7 +202,6 @@ int main(short argc, char *argv[])
 		} else {
 			/* This is the master process */
 			/* Close the connection */
-			//shutdown(conn, 2);
 			close(conn);
 			puts("Master connection closed.");
 		}
