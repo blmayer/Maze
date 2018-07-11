@@ -21,16 +21,16 @@ short send_response(int cli_conn)
 	/* Initialize variables for reading the request */
 	struct request req;		/* Create our request structure */
 	struct response res;		/* And our response structure */
-	char *header;
+	char *header = malloc(32);
 
 	/* ---- Read the request and respond ------------------------------ */
 
 respond:
 	/* Prepare variables to receive data */
-	header = realloc(header, 32);
 	bzero(&req, sizeof(struct request));
 	bzero(&res, sizeof(struct response));
-	bzero(header, 32);
+	header = realloc(header, 32);
+	perror("malloc");
 
 	/* Check if user didn't send any data and disconnect it */
 	get_header(cli_conn, header);		/* Read request */
@@ -53,6 +53,7 @@ respond:
 
 	/* Print values for checking */
 	puts("\tParsed:");
+	printf("\tType: %s\n", req.type);
 	printf("\tPath: %s\n", req.url);
 	printf("\tVersion: %.1f\n", req.vers);
 	printf("\tUser-Agent: %s\n", req.user);
@@ -67,23 +68,9 @@ respond:
 	res.path = req.url;
 	res.vers = req.vers;
 	res.serv = "Servrian/" VERSION;
-
-	/* Optional parameters, doesn't know how to handle this nicely */
-	if(req.auth == NULL) {
-		res.auth = NULL;
-	} else {
-		res.auth = req.auth;
-	}
-	if(req.key == NULL) {
-		res.key = NULL;
-	} else {
-		res.key = req.key;
-	}
-	if(req.conn == NULL) {
-		res.conn = "Keep-Alive";
-	} else {
-		res.conn = req.conn;
-	}
+	res.auth = req.auth;
+ 	res.key = req.key;
+ 	res.conn = req.conn;
 
 	/* Process the response with the correct method */
 	switch(strcmp(req.type, "PEZ")) {
