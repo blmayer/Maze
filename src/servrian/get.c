@@ -12,23 +12,19 @@
 
 short serve_get(short conn, struct response res)
 {
+	/* ---- Status checking -------------------------------------------- */
+
 	/* If the user sends the token respond with the correct page */
 	// if(res.auth != NULL) {
 	// 	/* Check authorization cases */
 	// 	res.status = authorization(res.auth);
 	// }
 
-	/* ---- Update path with the web pages directory ------------------- */
-
- 	/* If / was passed, redirect to index page */
- 	if(strncmp(res.path, "/", 1) == 0 && strlen(res.path) > 1) {
-		res.path = strtok(res.path, "/");
-	} else {
-		res.path = "index.html";
- 	}
-
 	/* Choose page based on the status */
 	switch(res.status) {
+	case 400:
+		res.path = "400.html";
+		break;
 	case 401:
 		res.path = "401.html";
 		break;
@@ -45,9 +41,17 @@ short serve_get(short conn, struct response res)
 		res.status = 200;
 	}
 
+	/* ---- Update path with the web pages directory ------------------- */
+
+ 	/* If / was passed, redirect to index page */
+ 	if(strlen(res.path) == 1) {
+		res.path = "index.html";
+ 	} else if(strncmp(res.path, "/", 1) == 0) {
+		res.path++;
+	}
+
 prepend:
 	/* Prepend webpages path to the path */
-	puts("\tPrepending PATH.");
 	char prep[strlen(res.path) + strlen(PATH) + 1];
 	sprintf(prep, "%s%s", PATH, res.path);
 	res.path = prep;
@@ -59,10 +63,8 @@ prepend:
 
 	if(page_file == NULL) {
 		/* Something went wrong, probably file was not found */
-		puts("Page not found, redirecting...");
+		puts("\tPage not found, redirecting...");
 		res.status = 404;
-		
-		/* Changing to 404 page */
 		res.path = "404.html";
 		goto prepend;
 	}
