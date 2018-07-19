@@ -52,6 +52,7 @@ short serve_get(short conn, struct response res)
 
 prepend:
 	/* Prepend webpages path to the path */
+	puts("\tAdjusting path.");
 	char prep[strlen(res.path) + strlen(PATH) + 1];
 	sprintf(prep, "%s%s", PATH, res.path);
 	res.path = prep;
@@ -85,6 +86,10 @@ prepend:
 	/* Verify the connection and request version */
 	if(res.conn == NULL && res.vers > 1) {
 		res.conn = "Keep-Alive";
+	} else if(res.conn != NULL && strcmp(res.conn, "Close")) {
+		res.conn = "Keep-Alive";
+	} else {
+		res.conn = "Close";
 	}
 
 	res.stext = status_text(res.status);	/* Write the status text */
