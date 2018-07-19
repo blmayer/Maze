@@ -33,7 +33,7 @@ int main(short argc, char *argv[])
 	 * -d or --dir to specify a root directory for your webpages.
 	 */
 
-	for(arg = 1; arg < argc; arg++) {
+	for(int arg = 1; arg < argc; arg++) {
 		/* This means we have at least an argument */
 		switch(strcmp(argv[arg], "--x")) {
 		case 59:
@@ -87,9 +87,9 @@ int main(short argc, char *argv[])
 
 	/* Using a block to free variables */
 	{
-		/* Append / to the path */
-		pathlen = strlen(PATH);
-		if(PATH + pathlen != '/') {
+		/* Append / to the end of path */
+		int pathlen = strlen(PATH);
+		if(strncmp(PATH + pathlen - 1, "/", 1) != 0) {
 			sprintf(temp, "%s/", PATH);
 			PATH = temp;
 		}
