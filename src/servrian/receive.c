@@ -14,26 +14,24 @@
 
 short send_response(int cli_conn)
 {
-	/* Set the socket timeout */
-	struct timeval timeout = {180, 0};	/* Timeout structure: 3 mins */
-	setsockopt(cli_conn, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, 18);
- 
 	/* Initialize variables for reading the request */
+	struct timeval tout = {180, 0};	/* Timeout structure: 3 mins */
 	struct request req;		/* Create our request structure */
 	struct response res;		/* And our response structure */
-	char *header = malloc(32);
 
+	/* Set the socket timeout */
+	setsockopt(cli_conn, SOL_SOCKET, SO_RCVTIMEO, (char *)&tout, 18);
+ 
 	/* ---- Read the request and respond ------------------------------ */
 
 respond:
 	/* Prepare variables to receive data */
 	bzero(&req, sizeof(struct request));
 	bzero(&res, sizeof(struct response));
-	header = realloc(header, 32);
-	perror("malloc");
+	char *header = malloc(128);
 
 	/* Check if user didn't send any data and disconnect it */
-	get_header(cli_conn, header);		/* Read request */
+	get_header(cli_conn, &header);		/* Read request */
 	if(strlen(header) == 0) {
 		puts("\tUser timed out or disconnected.");
 		return 0;
@@ -112,8 +110,13 @@ respond:
 	}
 
 	/* Close connection depending on the case */
-	if(!strcmp(res.conn, "Close") == 0 && res.vers > 1) {
+	if(req.conn == NULL && req.vers > 1) {
 		puts("\tReceiving again...");
+		free(header);
+		goto respond;
+	} else if(req.conn != NULL && strcmp(req.conn, "Close")) {
+		puts("\tReceiving again...");
+		free(header);
 		goto respond;
 	}
 
