@@ -24,16 +24,17 @@ short send_response(int cli_conn)
  
 	/* ---- Read the request and respond ------------------------------ */
 
-respond:
+receive:
 	/* Prepare variables to receive data */
 	bzero(&req, sizeof(struct request));
 	bzero(&res, sizeof(struct response));
 	char *header = malloc(128);
 
 	/* Check if user didn't send any data and disconnect it */
-	get_header(cli_conn, &header);		/* Read request */
+	get_header(cli_conn, &header);	/* Read request */
 	if(strlen(header) == 0) {
 		puts("\tUser timed out or disconnected.");
+		free(header);
 		return 0;
 	}
 
@@ -46,6 +47,7 @@ respond:
 			/* Bad request received */
 			puts("\tReceived bad request...");
 			res.status = 400;
+			req.type = "GET";
 		}
 	}
 
@@ -69,14 +71,13 @@ respond:
 	res.auth = req.auth;
  	res.key = req.key;
  	res.conn = req.conn;
-
+	
 	/* Process the response with the correct method */
 	switch(strcmp(req.type, "PEZ")) {
 	case -8:
 		puts("\tReceived HEAD");
 		if(serve_head(cli_conn, res) < 0) {
 			perror("\tUnable to respond");
-			return -1;
 		}
 		puts("\tResponse sent.");
 		break;
@@ -85,7 +86,6 @@ respond:
 		puts("\tProcessing GET request...");
 		if(serve_get(cli_conn, res) < 0) {
 			perror("\tA problem occurred");
-			return -1;
 		}
 		puts("\tResponse sent.");
 		break;
@@ -104,7 +104,6 @@ respond:
 		res.status = 501;
 		if(serve_get(cli_conn, res) < 0) {
 			perror("\tA problem occurred");
-			return -1;
 		}
 		puts("\tResponse sent.");
 	}
@@ -113,11 +112,11 @@ respond:
 	if(req.conn == NULL && req.vers > 1) {
 		puts("\tReceiving again...");
 		free(header);
-		goto respond;
+		goto receive;
 	} else if(req.conn != NULL && strcmp(req.conn, "Close")) {
 		puts("\tReceiving again...");
 		free(header);
-		goto respond;
+		goto receive;
 	}
 
 	free(header);
