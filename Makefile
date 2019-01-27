@@ -1,6 +1,6 @@
 # This is the master makefile, run make to build all projects
 SHELL = /bin/bash
-CFLAGS = -I ./ -O0
+CFLAGS = -I ./ -O0 -g -Wall
 VERSION = 0.0.1
 export
 
@@ -13,7 +13,7 @@ endif
 # Targets
 .PHONY: all tests install clean randomstr webng servrian maze
 
-all: randomstr webng maze servrian 
+all: randomstr webng maze servrian
 
 randomstr:
 	$(MAKE) -C src/randomstr
@@ -22,7 +22,7 @@ webng:
 	$(MAKE) -C src/webng
 
 key: randomstr
-	./src/randomstr/randomstr >> .KEY
+	./src/randomstr/randomstr > .KEY
 
 servrian: randomstr webng
 	$(MAKE) -C src/servrian
