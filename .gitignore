@@ -1,2 +1,3 @@
 .KEY
 *.o
+.vscode
