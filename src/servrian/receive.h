@@ -17,9 +17,9 @@
 
 /* Global variables from server.c (path to the webpages folder and key) */
 extern char *PATH;
+extern char *KEY;
 
 /* This function reads the header and passes it to the right function */
 short send_response(int cli_conn);
 
 #endif
-
