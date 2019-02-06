@@ -10,21 +10,20 @@
  * ****************************************************************************
  */
 
+#include "get.h"
+#include <arpa/inet.h>
+#include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <sys/socket.h>
-#include <arpa/inet.h>
-#include <netdb.h>
+#include <unistd.h>
 #include <webng.h>
-#include "get.h"
 
 int main(int argc, char *argv[])
 {
 	/* Get URL and port from command line */
-	if(argc != 2)
-	{
+	if (argc != 2) {
 		puts("Please input exactly one parameter");
 	}
 
@@ -37,14 +36,13 @@ int main(int argc, char *argv[])
 	struct addrinfo hints = {0};
 	struct addrinfo *host;
 
-	hints.ai_family = AF_INET;		/* Allow IPv4 or IPv6 */
-	hints.ai_socktype = SOCK_STREAM; 	/* TCP socket */
-	hints.ai_flags = 0;			/* For wildcard IP address */
-	hints.ai_protocol = 0; 			/* Any protocol */
+	hints.ai_family = AF_INET;       /* Allow IPv4 or IPv6 */
+	hints.ai_socktype = SOCK_STREAM; /* TCP socket */
+	hints.ai_flags = 0;		 /* For wildcard IP address */
+	hints.ai_protocol = 0;		 /* Any protocol */
 
 	int lookup = getaddrinfo(url.domain, url.port, &hints, &host);
-	if(lookup != 0)
-	{
+	if (lookup != 0) {
 		/* Get the host info */
 		puts("Unable to resolve host.");
 		return -1;
@@ -52,27 +50,24 @@ int main(int argc, char *argv[])
 
 	/* Open a socket */
 	int server = socket(AF_INET, SOCK_STREAM, 0);
-	if(server < 0)
-	{
+	if (server < 0) {
 		perror("Socket creation failed");
 		return 0;
 	}
 
 	/* Loop on the returned result checking for an address */
-	while(connect(server, host -> ai_addr, host -> ai_addrlen) == -1)
-	{
-		host = host -> ai_next; 
+	while (connect(server, host->ai_addr, host->ai_addrlen) == -1) {
+		host = host->ai_next;
 	}
-	
-	if(host == NULL)
-	{
+
+	if (host == NULL) {
 		puts("Could not connect.");
 		return -1;
 	}
 	puts("Connection successful!");
-	
+
 	/* Set the socket timeout */
-	struct timeval timeout = {10, 0};   /* Timeout structure: 10 seconds */
+	struct timeval timeout = {10, 0}; /* Timeout structure: 10 seconds */
 	setsockopt(server, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, 18);
 
 	/* Create a request structure */
@@ -83,33 +78,29 @@ int main(int argc, char *argv[])
 	req.conn = "Keep-Alive";
 	req.key = KEY;
 
-	if(host -> ai_canonname == NULL)
-	{
+	if (host->ai_canonname == NULL) {
 		req.host = url.domain;
-	} 
-	else
-	{
-		req.host = host -> ai_canonname;
+	} else {
+		req.host = host->ai_canonname;
 	}
-	
+
 	/* Send a not yet encrypted GET request */
 	send_get(server, req);
-	
+
 	/* ---- Read response's body --------------------------------------- */
 
 	/* Populate the response struct */
-	char *response = malloc(128);
-	get_header(server, response);
+	unsigned char *response = malloc(128);
+	get_message(server, &response, 0);
 
 	printf("received\n'%s'\n", response);
 	struct response res = {0};
-	if(parse_response(response, &res) < 0)
-	{
+	if (parse_response(response, &res) < 0) {
 		/* Could be an encrypted response */
 		puts("Trying to decode response...");
-		printf("decoded:\n'%s'\n", decode(response, KEY));
-		if(parse_response(decode(response, KEY), &res) < 0)
-		{
+		decode(response, KEY);
+		decode(response, KEY);
+		if (parse_response(response, &res) < 0) {
 			puts("Bad response.");
 			return 0;
 		}
@@ -126,25 +117,23 @@ int main(int argc, char *argv[])
 	printf("\tDate: %s\n", res.date);
 	printf("\tAuthorization: %s\n", res.auth);
 	printf("\tKey: %s\n", res.key);
-	
+
 	/* ---- Receiving the body ----------------------------------------- */
 
 	res.body = malloc(1);
 
 	/* The transfer may be normal */
-	if(res.clen > 0)
-	{
+	if (res.clen > 0) {
 		/* Reallocate space for the body */
 		res.body = realloc(res.body, res.clen + 1);
-		
+
 		/* Read the content from the socket */
 		read(server, res.body, res.clen);
 		res.body[res.clen] = 0;
 	}
 
 	/* Or may be chunked */
-	if(res.ttype != NULL && strcmp(res.ttype, "chunked") == 0)
-	{
+	if (res.ttype != NULL && strcmp(res.ttype, "chunked") == 0) {
 		/* Here we read and update the body */
 		char *temp = malloc(1);
 		read_chunks(server, temp);
@@ -152,9 +141,8 @@ int main(int argc, char *argv[])
 	}
 
 	/* Body read, close the connection */
-	if(req.key != NULL)
-	{
-		res.body = decode(res.body, req.key);
+	if (req.key != NULL) {
+		decode(res.body, req.key);
 	}
 
 	printf("Body:\n%s\n", res.body);
@@ -164,4 +152,3 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
-
