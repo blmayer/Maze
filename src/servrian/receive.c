@@ -15,35 +15,42 @@
 short send_response(int cli_conn)
 {
 	/* Initialize variables for reading the request */
-	struct timeval tout = {180, 0};	/* Timeout structure: 3 mins */
-	struct request req;		/* Create our request structure */
-	struct response res;		/* And our response structure */
+	// struct timeval tout = {5, 0}; // Timeout structure: 3 mins
+	struct request req;  // Create our request structure
+	struct response res; // And our response structure
 
 	/* Set the socket timeout */
-	setsockopt(cli_conn, SOL_SOCKET, SO_RCVTIMEO, (char *)&tout, 18);
- 
-	/* ---- Read the request and respond ------------------------------ */
+	// setsockopt(cli_conn, SOL_SOCKET, SO_RCVTIMEO, (char *)&tout, 18);
+
+	/* ---- Check for an SSL/TLS handshake ----------------------------- */
+
+	struct sslSession *ssl_info = do_ssl_handshake(cli_conn);
+	if (!ssl_info) {
+		puts("Not in a SSL session");
+	}
+
+	/* ---- Read the request and respond ------------------------------- */
 
 receive:
 	/* Prepare variables to receive data */
 	bzero(&req, sizeof(struct request));
 	bzero(&res, sizeof(struct response));
-	char *header = malloc(128);
+	unsigned char *header = malloc(517);
 
 	/* Check if user didn't send any data and disconnect it */
-	get_header(cli_conn, &header);	/* Read request */
-	if(strlen(header) == 0) {
+	get_message(cli_conn, &header, 0); /* Read request */
+	if (strlen(header) == 0) {
 		puts("\tUser timed out or disconnected.");
 		free(header);
 		return 0;
 	}
 
 	/* Populate our struct with request */
-	if(parse_request(header, &req) < 0) {
+	if (parse_request(header, &req) < 0) {
 		/* Probably request is encrypted */
 		puts("\tTrying to parse an encrypted request...");
 		decode(header, KEY);
-		if(parse_request(header, &req) < 0) {
+		if (parse_request(header, &req) < 0) {
 			/* Bad request received */
 			puts("\tReceived bad request...");
 			res.status = 400;
@@ -69,51 +76,51 @@ receive:
 	res.vers = req.vers;
 	res.serv = "Servrian/" VERSION;
 	res.auth = req.auth;
- 	res.key = req.key;
- 	res.conn = req.conn;
-	
+	res.key = req.key;
+	res.conn = req.conn;
+
 	/* Process the response with the correct method */
-	switch(strcmp(req.type, "PEZ")) {
+	switch (strcmp(req.type, "PEZ")) {
 	case -8:
 		puts("\tReceived HEAD");
-		if(serve_head(cli_conn, res) < 0) {
+		if (serve_head(cli_conn, res) < 0) {
 			perror("\tUnable to respond");
 		}
 		puts("\tResponse sent.");
 		break;
-	
+
 	case -9:
 		puts("\tProcessing GET request...");
-		if(serve_get(cli_conn, res) < 0) {
+		if (serve_get(cli_conn, res) < 0) {
 			perror("\tA problem occurred");
 		}
 		puts("\tResponse sent.");
 		break;
-	
-	// case 10:
-	// 	puts("\tProcessing POST request...");
-	// 	if(handle_post(cli_conn, res) < 0) {
-	// 		perror("\tA problem occurred");
-	// 		return -1;
-	// 	}
-	// 	puts("\tPOST processed.");
-	// 	break;
+
+		// case 10:
+		// 	puts("\tProcessing POST request...");
+		// 	if(handle_post(cli_conn, res) < 0) {
+		// 		perror("\tA problem occurred");
+		// 		return -1;
+		// 	}
+		// 	puts("\tPOST processed.");
+		// 	break;
 
 	default:
 		puts("Unsupported request.");
 		res.status = 501;
-		if(serve_get(cli_conn, res) < 0) {
+		if (serve_get(cli_conn, res) < 0) {
 			perror("\tA problem occurred");
 		}
 		puts("\tResponse sent.");
 	}
 
 	/* Close connection depending on the case */
-	if(req.conn == NULL && req.vers > 1) {
+	if (req.conn == NULL && req.vers > 1) {
 		puts("\tReceiving again...");
 		free(header);
 		goto receive;
-	} else if(req.conn != NULL && strcmp(req.conn, "Close")) {
+	} else if (req.conn != NULL && strcmp(req.conn, "Close")) {
 		puts("\tReceiving again...");
 		free(header);
 		goto receive;
@@ -124,4 +131,3 @@ receive:
 
 	return 0;
 }
-
