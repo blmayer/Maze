@@ -223,18 +223,25 @@ int parse_extensions(unsigned char *msg, struct sslSession *sslConn)
 	/* Loop in all extensions */
 	while (exts_len > 0) {
 		printf("exts len: %d\n", exts_len);
+
 		/* Extension id or type */
-		unsigned char ext_id[2] = {*msg++, *msg++};
-		printf("extension type: %x %x\n", ext_id[0], ext_id[1]);
+		unsigned short ext_type = *msg++ << 8;
+		ext_type += *msg++;
+		printf("extension type: %d\n", ext_type);
 
 		/* Continue parsing with the correct method */
-		if (ext_id[0] == 0 && ext_id[1] == 0) {
+		switch (ext_type) {
+		case 0:
 			puts("Reading SNI");
 			int bytes = parse_server_name_ext(msg);
 			exts_len -= bytes;
-		} else {
-			printf("Unknown extension: %x %x\n", ext_id[0],
-			       ext_id[1]);
+			break;
+		case 14:
+			puts("Reading SRTP extension");
+			puts("Not implemented, WIP");
+			break;
+		default:
+			printf("Unknown extension: %d\n", ext_type);
 			unsigned short ext_len = *msg++ << 8;
 			ext_len += *msg++;
 			printf("this ext len: %d\n", ext_len);
@@ -272,6 +279,10 @@ unsigned short parse_server_name_ext(unsigned char *msg)
 			/* String lenght */
 			name_len = *msg++ << 8;
 			name_len += *msg++;
+			if (name_len == 0) {
+				puts("Invalid name lenght");
+				break;
+			}
 
 			printf("Host name len: %d\n", name_len);
 			list_len -= name_len;
@@ -285,6 +296,8 @@ unsigned short parse_server_name_ext(unsigned char *msg)
 		/* Go to next item in list */
 		list_len -= 3;
 	}
+
+	puts("parsed name ext");
 
 	return ext_len;
 }
