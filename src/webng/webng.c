@@ -115,7 +115,7 @@ struct sslSession *do_ssl_handshake(int conn)
 	unsigned char maj_ver = header[1];
 	unsigned char min_ver = header[2];
 
-	/* Lenght of data fragment to read */
+	/* Length of data fragment to read */
 	unsigned short data_len = (header[3] << 8) + header[4];
 
 	/* Some prints */
@@ -145,7 +145,7 @@ int parse_tls_handshake(unsigned char *fragment, struct sslSession *ssl_conn)
 	/* Get handshake type */
 	ssl_conn->type = *fragment++;
 
-	/* Lenght of the fragment */
+	/* Length of the fragment */
 	unsigned int data_len = 0;
 	data_len = *fragment++ << 16;
 	data_len += *fragment++ << 8;
@@ -215,13 +215,14 @@ int parse_tls_client_hello(unsigned char *msg, struct sslSession *ssl_conn)
 
 int parse_extensions(unsigned char *msg, struct sslSession *sslConn)
 {
-	/* Lenght of all extensions */
+	/* Length of all extensions */
 	unsigned short exts_len = *msg++ << 8;
 	exts_len += *msg++;
 	printf("extensions len: %d\n", exts_len);
 
 	/* Loop in all extensions */
-	while (exts_len > 0) {
+	while (exts_len) {
+		sleep(1);
 		printf("exts len: %d\n", exts_len);
 
 		/* Extension id or type */
@@ -233,12 +234,12 @@ int parse_extensions(unsigned char *msg, struct sslSession *sslConn)
 		switch (ext_type) {
 		case 0:
 			puts("Reading SNI");
-			int bytes = parse_server_name_ext(msg);
-			exts_len -= bytes;
+			exts_len -= parse_server_name_ext(msg);
 			break;
 		case 14:
 			puts("Reading SRTP extension");
-			puts("Not implemented, WIP");
+			puts("WIP");
+			exts_len -= parse_use_srtp_ext(msg);
 			break;
 		default:
 			printf("Unknown extension: %d\n", ext_type);
@@ -257,7 +258,7 @@ int parse_extensions(unsigned char *msg, struct sslSession *sslConn)
 
 unsigned short parse_server_name_ext(unsigned char *msg)
 {
-	/* Server name extension lenght */
+	/* Server name extension length */
 	unsigned short ext_len = *msg++ << 8;
 	ext_len += *msg++;
 	printf("extension len: %d\n", ext_len);
@@ -268,7 +269,7 @@ unsigned short parse_server_name_ext(unsigned char *msg)
 	printf("Server names list len: %d\n", list_len);
 
 	/* Loop in the list of names */
-	while (list_len > 0) {
+	while (list_len) {
 		/* Types: 0: host name */
 		unsigned char name_type = *msg++;
 		printf("name type: %d\n", name_type);
@@ -276,11 +277,11 @@ unsigned short parse_server_name_ext(unsigned char *msg)
 		/* Case hostname */
 		unsigned short name_len;
 		if (name_type == 0) {
-			/* String lenght */
+			/* String length */
 			name_len = *msg++ << 8;
 			name_len += *msg++;
 			if (name_len == 0) {
-				puts("Invalid name lenght");
+				puts("Invalid name length");
 				break;
 			}
 
@@ -300,6 +301,31 @@ unsigned short parse_server_name_ext(unsigned char *msg)
 	puts("parsed name ext");
 
 	return ext_len;
+}
+
+unsigned short parse_use_srtp_ext(unsigned char *msg)
+{
+	/* SRTP Protection Profile */
+	unsigned short profile = *msg++ << 8;
+	profile += *msg++;
+	printf("profiles: %d\n", profile);
+
+	/* Read profiles */
+	while (profile--) {
+		printf("Profile value: %d ", *msg++);
+		printf("%d\n", *msg++);
+	}
+
+	/* Length of SRTP MKI */
+	unsigned char mki_len = *msg++;
+	printf("mki_len: %d\n", mki_len);
+
+	/* Read MKI */
+	while (mki_len--) {
+		printf("%c", *msg++);
+	}
+
+	return 2 + profile + mki_len;
 }
 
 short parse_URL(char *url, struct url *addr)

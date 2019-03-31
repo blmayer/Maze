@@ -21,7 +21,7 @@
 /* Global variables with default values */
 short PORT = 5000;
 char *PATH = "webpages/";
-char *KEY = "kjhgpyuihgybt78;7trb5 7fGIKhphhgbvdr5ioyhtfbcvffyttfJHTR^G%Sqd";
+char *KEY = "kjhgpyuihgybt78;7trb57fGIKhphhgbvdr5ioyhtfbcvffyttfJHTR^G%Sqd";
 
 /* Opens a TCP socket at the desired port and listens to connections */
 int main(int argc, char *argv[])

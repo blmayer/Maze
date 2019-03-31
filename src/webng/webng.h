@@ -96,6 +96,8 @@ int parse_extensions(unsigned char *msg, struct sslSession *sslConn);
 
 unsigned short parse_server_name_ext(unsigned char *msg);
 
+unsigned short parse_use_srtp_ext(unsigned char *msg);
+
 /* Extracts a token from a string */
 char *get_token(char *source, char *par);
 
