@@ -81,7 +81,7 @@ inline int get_ready_bytes(int conn)
 	return ready_bytes;
 }
 
-int get_message(int conn, unsigned char **buffer, int buff_start)
+int get_message(int conn, char **buffer, int buff_start)
 {
 	int ready_bytes = get_ready_bytes(conn); // This blocks for 5 sec
 	*buffer = realloc(*buffer, buff_start + ready_bytes);
@@ -101,7 +101,7 @@ struct sslSession *do_ssl_handshake(int conn)
 
 	/* ---- Read the Record Layer -------------------------------------- */
 
-	/* First five byte gives us enough info */
+	/* First five bytes gives us enough info */
 	unsigned char header[5];
 	read(conn, header, 5);
 
@@ -126,11 +126,16 @@ struct sslSession *do_ssl_handshake(int conn)
 	/* Fragment */
 	unsigned char *fragment = malloc(data_len);
 	read(conn, fragment, data_len);
+	for (int i = 0; i < data_len; i++) {
+		printf("%02x ", fragment[i]);
+	}
+	puts("");
 
 	/* ---- Parse the fragment ----------------------------------------- */
 
 	switch (ssl_conn->proto) {
 	case 22:
+		puts("Parsing a TLS handshake");
 		parse_tls_handshake(fragment, ssl_conn);
 	}
 
@@ -154,6 +159,7 @@ int parse_tls_handshake(unsigned char *fragment, struct sslSession *ssl_conn)
 
 	switch (ssl_conn->type) {
 	case 1:
+		puts("Handshake is a client hello");
 		parse_tls_client_hello(fragment, ssl_conn);
 	}
 
@@ -174,8 +180,8 @@ int parse_tls_client_hello(unsigned char *msg, struct sslSession *ssl_conn)
 	msg += 32;
 
 	/* Session id */
-	unsigned char id_len = *msg++; // byte 35 has the session id lenght
-	printf("id len: %d\n", id_len);
+	unsigned char id_len = *msg++; // byte 35 has the session id length
+	printf("session id len: %d\n", id_len);
 	if (id_len > 0) {
 		ssl_conn->id = malloc(id_len);
 		printf("session id: ");
@@ -183,6 +189,7 @@ int parse_tls_client_hello(unsigned char *msg, struct sslSession *ssl_conn)
 			printf("%x", i);
 			ssl_conn->id[i] = *msg++;
 		}
+		ssl_conn->id[id_len] = '\0';
 		puts("");
 	} else {
 		ssl_conn->id = 0;
@@ -191,11 +198,9 @@ int parse_tls_client_hello(unsigned char *msg, struct sslSession *ssl_conn)
 	/* Cipher suites parsing */
 	unsigned short ciphers_len = *msg++ << 8;
 	ciphers_len += *msg++;
-
 	printf("ciphers len: %d\n", ciphers_len);
-
 	for (int i = 0; i < ciphers_len; i++) {
-		printf("%x ", *msg++);
+		printf("%02x ", *msg++);
 	}
 
 	/* Compression methods */
@@ -208,6 +213,7 @@ int parse_tls_client_hello(unsigned char *msg, struct sslSession *ssl_conn)
 	}
 
 	/* Extensions */
+	puts("Parsing extensions");
 	parse_extensions(msg, ssl_conn);
 
 	return 0;
@@ -218,28 +224,31 @@ int parse_extensions(unsigned char *msg, struct sslSession *sslConn)
 	/* Length of all extensions */
 	unsigned short exts_len = *msg++ << 8;
 	exts_len += *msg++;
-	printf("extensions len: %d\n", exts_len);
 
 	/* Loop in all extensions */
 	while (exts_len) {
 		sleep(1);
-		printf("exts len: %d\n", exts_len);
+		printf("extensions len: %d\n", exts_len);
 
 		/* Extension id or type */
+		printf("extension: %02x ", *msg);
 		unsigned short ext_type = *msg++ << 8;
+		printf("%02x\n", *msg);
 		ext_type += *msg++;
-		printf("extension type: %d\n", ext_type);
 
 		/* Continue parsing with the correct method */
 		switch (ext_type) {
 		case 0:
 			puts("Reading SNI");
-			exts_len -= parse_server_name_ext(msg);
+			exts_len -= parse_server_name_ext(&msg);
 			break;
 		case 14:
 			puts("Reading SRTP extension");
-			puts("WIP");
-			exts_len -= parse_use_srtp_ext(msg);
+			exts_len -= parse_use_srtp_ext(&msg);
+			break;
+		case 11:
+			puts("Reading EC point formats");
+			exts_len -= parse_ec_point_formats_ext(&msg);
 			break;
 		default:
 			printf("Unknown extension: %d\n", ext_type);
@@ -256,30 +265,30 @@ int parse_extensions(unsigned char *msg, struct sslSession *sslConn)
 	return 0;
 }
 
-unsigned short parse_server_name_ext(unsigned char *msg)
+unsigned short parse_server_name_ext(unsigned char **msg)
 {
 	/* Server name extension length */
-	unsigned short ext_len = *msg++ << 8;
-	ext_len += *msg++;
+	unsigned short ext_len = *(*msg)++ << 8;
+	ext_len += *(*msg)++;
 	printf("extension len: %d\n", ext_len);
 
 	/* This is a list */
-	unsigned short list_len = *msg++ << 8;
-	list_len += *msg++;
+	unsigned short list_len = *(*msg)++ << 8;
+	list_len += *(*msg)++;
 	printf("Server names list len: %d\n", list_len);
 
 	/* Loop in the list of names */
 	while (list_len) {
 		/* Types: 0: host name */
-		unsigned char name_type = *msg++;
+		unsigned char name_type = *(*msg)++;
 		printf("name type: %d\n", name_type);
 
 		/* Case hostname */
 		unsigned short name_len;
 		if (name_type == 0) {
 			/* String length */
-			name_len = *msg++ << 8;
-			name_len += *msg++;
+			name_len = *(*msg)++ << 8;
+			name_len += *(*msg)++;
 			if (name_len == 0) {
 				puts("Invalid name length");
 				break;
@@ -288,7 +297,7 @@ unsigned short parse_server_name_ext(unsigned char *msg)
 			printf("Host name len: %d\n", name_len);
 			list_len -= name_len;
 			while (name_len-- > 0) {
-				printf("%c", *msg++);
+				printf("%c", *(*msg)++);
 			}
 
 			puts("");
@@ -299,33 +308,44 @@ unsigned short parse_server_name_ext(unsigned char *msg)
 	}
 
 	puts("parsed name ext");
-
 	return ext_len;
 }
 
-unsigned short parse_use_srtp_ext(unsigned char *msg)
+unsigned short parse_use_srtp_ext(unsigned char **msg)
 {
 	/* SRTP Protection Profile */
-	unsigned short profile = *msg++ << 8;
-	profile += *msg++;
+	unsigned short profile = **msg++ << 8;
+	profile += **msg++;
 	printf("profiles: %d\n", profile);
 
 	/* Read profiles */
 	while (profile--) {
-		printf("Profile value: %d ", *msg++);
-		printf("%d\n", *msg++);
+		printf("Profile value: %02x ", **msg++);
+		printf("%02x\n", **msg++);
 	}
 
 	/* Length of SRTP MKI */
-	unsigned char mki_len = *msg++;
+	unsigned char mki_len = **msg++;
 	printf("mki_len: %d\n", mki_len);
 
 	/* Read MKI */
 	while (mki_len--) {
-		printf("%c", *msg++);
+		printf("%c", **msg++);
 	}
 
 	return 2 + profile + mki_len;
+}
+
+unsigned short parse_ec_point_formats_ext(unsigned char **msg)
+{
+	unsigned short ext_len = *(*msg)++ << 8;
+	ext_len += *(*msg)++;
+	printf("points format bytes: %d\n", ext_len);
+	for (int i = 0; i < ext_len; i++) {
+		printf("%02x ", *(*msg)++);
+	}
+
+	return ext_len;
 }
 
 short parse_URL(char *url, struct url *addr)
@@ -438,11 +458,6 @@ short parse_request(char *message, struct request *req)
 			temp = strtok(NULL, "\r\n");
 			continue;
 		}
-		if (strncmp(temp, "Key: ", 5) == 0) {
-			req->key = temp + 5;
-			temp = strtok(NULL, "\r\n");
-			continue;
-		}
 		temp = strtok(NULL, "\r\n");
 	}
 
@@ -519,11 +534,6 @@ short parse_response(char *message, struct response *res)
 			temp = strtok(NULL, "\r\n");
 			continue;
 		}
-		if (strncmp(temp, "Key: ", 5) == 0) {
-			res->key = temp + 5;
-			temp = strtok(NULL, "\r\n");
-			continue;
-		}
 		temp = strtok(NULL, "\r\n");
 	}
 
@@ -543,9 +553,6 @@ short req_header_len(struct request req)
 	/* And optional lines */
 	if (req.auth != NULL) {
 		header_size += 17 + strlen(req.auth);
-	}
-	if (req.key != NULL) {
-		header_size += 7 + strlen(req.key);
 	}
 
 	/* File length line, if we want */
@@ -585,11 +592,6 @@ short create_req_header(struct request req, char *dest)
 			"Content-Length: %d\r\n",
 			req.ctype, req.clen);
 	}
-	if (req.key != NULL) {
-		sprintf(dest + strlen(dest), "Key: %s\r\n", req.key);
-		encode(dest, req.key);
-		strcat(dest, "\r\n");
-	}
 
 	return 0;
 }
@@ -617,11 +619,6 @@ short res_header_len(struct response res)
 		header_size += 16 + strlen(res.ctype); /* Content Encoding */
 	}
 
-	/* Key line */
-	if (res.key != NULL) {
-		header_size += 7 + strlen(res.key);
-	}
-
 	return header_size + 1; /* Terminating zero */
 }
 
@@ -640,56 +637,35 @@ short create_res_header(struct response res, char *dest)
 			res.clen);
 	}
 
-	/* Encrypt using passed key */
-	if (res.key != NULL) {
-		encode(dest, res.key);
-	}
-
 	return 0;
 }
 
-short *split_keys(char *key_list)
-{
-	static short keys[512];
-	short i = 0;
-	char *key = strtok(key_list, " ");
+// void encode(char *message, char *key)
+// {
+// 	/* Get length of received message and key */
+// 	int n = strlen(message);
+// 	int i = 0;
 
-	while (key != NULL && i < 512) {
-		keys[i] = atoi(key);
-		printf("%d\n", keys[i]);
-		key = strtok(NULL, " ");
-		i++;
-	}
+// 	/* Loop changing characters */
+// 	while (i < n) {
+// 		message[i] = (message[i] ^ key[i % 512]) + 33;
+// 		i++;
+// 	}
 
-	return keys;
-}
+// 	message[n] = 0; /* Add terminating zero */
+// }
 
-void encode(char *message, char *key)
-{
-	/* Get length of received message and key */
-	int n = strlen(message);
-	int i = 0;
+// void decode(char *cipher, char *key)
+// {
+// 	/* Get length of received message and key */
+// 	int n = strlen(cipher);
+// 	int i = 0;
 
-	/* Loop changing characters */
-	while (i < n) {
-		message[i] = (message[i] ^ key[i % 512]) + 33;
-		i++;
-	}
+// 	/* Loop changing characters */
+// 	while (i < n) {
+// 		cipher[i] = (cipher[i] - 33) ^ key[i % 512];
+// 		i++;
+// 	}
 
-	message[n] = 0; /* Add terminating zero */
-}
-
-void decode(char *cipher, char *key)
-{
-	/* Get length of received message and key */
-	int n = strlen(cipher);
-	int i = 0;
-
-	/* Loop changing characters */
-	while (i < n) {
-		cipher[i] = (cipher[i] - 33) ^ key[i % 512];
-		i++;
-	}
-
-	cipher[n] = 0; /* Add terminating zero */
-}
+// 	cipher[n] = 0; /* Add terminating zero */
+// }
