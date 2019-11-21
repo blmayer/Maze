@@ -242,13 +242,21 @@ int parse_extensions(unsigned char *msg, struct sslSession *sslConn)
 			puts("Reading SNI");
 			exts_len -= parse_server_name_ext(&msg);
 			break;
-		case 14:
-			puts("Reading SRTP extension");
-			exts_len -= parse_use_srtp_ext(&msg);
+		case 10:
+			puts("Reading supported groups");
+			exts_len -= parse_supported_groups_ext(&msg);
 			break;
 		case 11:
 			puts("Reading EC point formats");
 			exts_len -= parse_ec_point_formats_ext(&msg);
+			break;
+		case 13:
+			puts("Reading signature algorithms");
+			exts_len -= parse_signature_algorithms_ext(&msg);
+			break;
+		case 14:
+			puts("Reading SRTP extension");
+			exts_len -= parse_use_srtp_ext(&msg);
 			break;
 		default:
 			printf("Unknown extension: %d\n", ext_type);
@@ -311,6 +319,67 @@ unsigned short parse_server_name_ext(unsigned char **msg)
 	return ext_len;
 }
 
+unsigned short parse_supported_groups_ext(unsigned char **msg)
+{
+	/* Supported groups extension length */
+	unsigned short ext_len = *(*msg)++ << 8;
+	ext_len += *(*msg)++;
+	printf("extension len: %d\n", ext_len);
+
+	/* This is a list */
+	unsigned short list_len = *(*msg)++ << 8;
+	list_len += *(*msg)++;
+	printf("Supported groups list len: %d\n", list_len);
+
+	/* Loop in the list of groups */
+	for (int i = 0; i < list_len; i += 2) {
+		printf("%02x ", *(*msg)++);
+		printf("%02x\n", *(*msg)++);
+	}
+
+	puts("parsed supported groups ext");
+	return ext_len;
+}
+
+unsigned short parse_ec_point_formats_ext(unsigned char **msg)
+{
+	/* EC point formats extension length */
+	unsigned short ext_len = *(*msg)++ << 8;
+	ext_len += *(*msg)++;
+	printf("extension len: %d\n", ext_len);
+
+	// Just print the formats
+	for (int i = 0; i < ext_len; i += 2) {
+		printf("%02x ", *(*msg)++);
+		printf("%02x\n", *(*msg)++);
+	}
+
+	puts("parsed EC point formats ext");
+	return ext_len;
+}
+
+unsigned short parse_signature_algorithms_ext(unsigned char **msg)
+{
+	/* Signature algorithms extension length */
+	unsigned short ext_len = *(*msg)++ << 8;
+	ext_len += *(*msg)++;
+	printf("extension len: %d\n", ext_len);
+
+	/* This is a list */
+	unsigned short list_len = *(*msg)++ << 8;
+	list_len += *(*msg)++;
+	printf("algorithms list len: %d\n", list_len);
+
+	/* Loop in the list of groups */
+	for (int i = 0; i < list_len; i += 2) {
+		printf("%02x ", *(*msg)++);
+		printf("%02x\n", *(*msg)++);
+	}
+
+	puts("parsed signature algorithms ext");
+	return ext_len;
+}
+
 unsigned short parse_use_srtp_ext(unsigned char **msg)
 {
 	/* SRTP Protection Profile */
@@ -334,18 +403,6 @@ unsigned short parse_use_srtp_ext(unsigned char **msg)
 	}
 
 	return 2 + profile + mki_len;
-}
-
-unsigned short parse_ec_point_formats_ext(unsigned char **msg)
-{
-	unsigned short ext_len = *(*msg)++ << 8;
-	ext_len += *(*msg)++;
-	printf("points format bytes: %d\n", ext_len);
-	for (int i = 0; i < ext_len; i++) {
-		printf("%02x ", *(*msg)++);
-	}
-
-	return ext_len;
 }
 
 short parse_URL(char *url, struct url *addr)
