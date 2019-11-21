@@ -30,7 +30,7 @@ short send_get(short conn, struct request req)
 	/* Create the head */
 	char request[req_header_len(req)];
 	create_req_header(req, request);
-	printf("header len: %d\n", strlen(request));
+	printf("header len: %lu\n", strlen(request));
 	printf("request:\n%s\n", request);
 
 	/* Send the request */
