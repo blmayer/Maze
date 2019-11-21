@@ -36,7 +36,6 @@ struct response {
 	char *date;
 	char *conn;
 	char *auth;
-	char *key;
 	char *cenc;
 	char *ctype;
 	int clen;
@@ -53,7 +52,6 @@ struct request {
 	char *conn;
 	char *user;
 	char *auth;
-	char *key;
 	char *cenc;
 	char *ctype;
 	int clen;
@@ -81,7 +79,7 @@ void read_chunks(int conn, char *body);
 int get_ready_bytes(int conn);
 
 /* Reads data in the HTTP header format from a socket */
-int get_message(int conn, unsigned char **buffer, int buff_start);
+int get_message(int conn, char **buffer, int buff_start);
 
 /* Parses the ssl handshake */
 struct sslSession *do_ssl_handshake(int conn);
@@ -94,9 +92,11 @@ int parse_tls_client_hello(unsigned char *message, struct sslSession *ssl_conn);
 
 int parse_extensions(unsigned char *msg, struct sslSession *sslConn);
 
-unsigned short parse_server_name_ext(unsigned char *msg);
+unsigned short parse_server_name_ext(unsigned char **msg);
 
-unsigned short parse_use_srtp_ext(unsigned char *msg);
+unsigned short parse_use_srtp_ext(unsigned char **msg);
+
+unsigned short parse_ec_point_formats_ext(unsigned char **msg);
 
 /* Extracts a token from a string */
 char *get_token(char *source, char *par);
@@ -126,9 +126,9 @@ short create_res_header(struct response res, char *dest);
 short *split_keys(char *key_list);
 
 /* Reads a message and encodes it */
-void encode(char *message, char *key);
+// void encode(char *message, char *key);
 
 /* Reads an encrypted message and decodes it */
-void decode(char *cypher, char *key);
+// void decode(char *cypher, char *key);
 
 #endif
