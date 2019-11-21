@@ -76,7 +76,6 @@ int main(int argc, char *argv[])
 	req.url = url.path;
 	req.vers = 1.1;
 	req.conn = "Keep-Alive";
-	req.key = KEY;
 
 	if (host->ai_canonname == NULL) {
 		req.host = url.domain;
@@ -90,20 +89,14 @@ int main(int argc, char *argv[])
 	/* ---- Read response's body --------------------------------------- */
 
 	/* Populate the response struct */
-	unsigned char *response = malloc(128);
+	char *response = malloc(128);
 	get_message(server, &response, 0);
 
 	printf("received\n'%s'\n", response);
 	struct response res = {0};
 	if (parse_response(response, &res) < 0) {
-		/* Could be an encrypted response */
-		puts("Trying to decode response...");
-		decode(response, KEY);
-		decode(response, KEY);
-		if (parse_response(response, &res) < 0) {
-			puts("Bad response.");
-			return 0;
-		}
+		puts("Bad response.");
+		return 0;
 	}
 
 	/* Print values for checking */
@@ -116,7 +109,6 @@ int main(int argc, char *argv[])
 	printf("\tContent Length: %d\n", res.clen);
 	printf("\tDate: %s\n", res.date);
 	printf("\tAuthorization: %s\n", res.auth);
-	printf("\tKey: %s\n", res.key);
 
 	/* ---- Receiving the body ----------------------------------------- */
 
@@ -138,11 +130,6 @@ int main(int argc, char *argv[])
 		char *temp = malloc(1);
 		read_chunks(server, temp);
 		res.body = temp;
-	}
-
-	/* Body read, close the connection */
-	if (req.key != NULL) {
-		decode(res.body, req.key);
 	}
 
 	printf("Body:\n%s\n", res.body);
