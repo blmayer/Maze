@@ -102,6 +102,8 @@ unsigned short parse_signature_algorithms_ext(unsigned char **msg);
 
 unsigned short parse_use_srtp_ext(unsigned char **msg);
 
+unsigned short parse_proto_negotiation_ext(unsigned char **msg);
+
 /* Extracts a token from a string */
 char *get_token(char *source, char *par);
 
