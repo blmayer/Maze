@@ -12,7 +12,6 @@
 #include <string.h>
 #include <time.h>
 #include <math.h>
-#include <openssl/sha.h>
 
 /* File operations definitions */
 
