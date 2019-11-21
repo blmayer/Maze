@@ -35,7 +35,7 @@ receive:
 	/* Prepare variables to receive data */
 	bzero(&req, sizeof(struct request));
 	bzero(&res, sizeof(struct response));
-	unsigned char *header = malloc(517);
+	char *header = malloc(517);
 
 	/* Check if user didn't send any data and disconnect it */
 	get_message(cli_conn, &header, 0); /* Read request */
@@ -47,15 +47,10 @@ receive:
 
 	/* Populate our struct with request */
 	if (parse_request(header, &req) < 0) {
-		/* Probably request is encrypted */
-		puts("\tTrying to parse an encrypted request...");
-		decode(header, KEY);
-		if (parse_request(header, &req) < 0) {
-			/* Bad request received */
-			puts("\tReceived bad request...");
-			res.status = 400;
-			req.type = "GET";
-		}
+		/* Bad request received */
+		puts("\tReceived bad request...");
+		res.status = 400;
+		req.type = "GET";
 	}
 
 	/* Print values for checking */
@@ -68,7 +63,6 @@ receive:
 	printf("\tContent Type: %s\n", req.ctype);
 	printf("\tContent Length: %d\n", req.clen);
 	printf("\tAuthorization: %s\n", req.auth);
-	printf("\tKey: %s\n", req.key);
 
 	/* Populate the response struct based on the request struct */
 	res.type = req.type;
@@ -76,7 +70,6 @@ receive:
 	res.vers = req.vers;
 	res.serv = "Servrian/" VERSION;
 	res.auth = req.auth;
-	res.key = req.key;
 	res.conn = req.conn;
 
 	/* Process the response with the correct method */
