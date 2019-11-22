@@ -1,4 +1,7 @@
-#define NULL (void *)0
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include "webng.h"
 
 /* A structure to hold SSL information needed to exchange messages */
 struct sslSession {
