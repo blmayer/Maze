@@ -22,15 +22,15 @@ struct sslSession *do_ssl_handshake(int conn)
 	}
 
 	/* Version */
-	unsigned char maj_ver = header[1];
-	unsigned char min_ver = header[2];
+	ssl_conn->ver[0] = header[1];
+	ssl_conn->ver[1] = header[2];
 
 	/* Length of data fragment to read */
 	unsigned short data_len = (header[3] << 8) + header[4];
 
 	/* Some prints */
-	printf("type: %u\n", ssl_conn->proto);
-	printf("version: %d.%d\n", maj_ver, min_ver);
+	printf("type: %u\n", header[0]);
+	printf("version: %d.%d\n", ssl_conn->ver[0], ssl_conn->ver[1]);
 	printf("data_len: %d\n", data_len);
 
 	/* Fragment */
@@ -58,16 +58,16 @@ struct sslSession *do_ssl_handshake(int conn)
 int parse_tls_handshake(unsigned char *fragment, struct sslSession *ssl_conn)
 {
 	/* Get handshake type */
-	ssl_conn->type = *fragment++;
+	char type = *fragment++;
 
 	/* Length of the fragment */
 	unsigned int data_len = 0;
 	data_len = *fragment++ << 16;
 	data_len += *fragment++ << 8;
 	data_len += *fragment++;
-	printf("handshake type: %d, data len: %d\n", ssl_conn->type, data_len);
+	printf("handshake type: %d, data len: %d\n", type, data_len);
 
-	switch (ssl_conn->type) {
+	switch (type) {
 	case 1:
 		puts("Handshake is a client hello");
 		parse_tls_client_hello(fragment, ssl_conn);
@@ -86,19 +86,19 @@ int parse_tls_client_hello(unsigned char *msg, struct sslSession *ssl_conn)
 	}
 
 	/* Random bytes */
-	// 32 bytes discarted for now
-	msg += 32;
+	for (int i = 0; i < 32; i++) {
+        ssl_conn->random[i] = *msg++;
+    }
 
 	/* Session id */
 	unsigned char id_len = *msg++; // byte 35 has the session id length
 	printf("session id len: %d\n", id_len);
-	if (id_len > 0) {
+	if (id_len > 0 && id_len < 33) {
 		printf("session id: ");
 		for (int i = 0; i < id_len; i++) {
-			printf("%x", i);
+			printf("%02x ", *msg);
 			ssl_conn->id[i] = *msg++;
 		}
-		ssl_conn->id[id_len] = '\0';
 		puts("");
 	}
 
