@@ -24,9 +24,15 @@ short send_response(int cli_conn)
 
 	/* ---- Check for an SSL/TLS handshake ----------------------------- */
 
-	struct sslSession *ssl_info = do_ssl_handshake(cli_conn);
-	if (!ssl_info) {
-		puts("Not in a SSL session");
+	struct sslSession session;
+	int ssl_info = do_tls_handshake(cli_conn, &session);
+	if (ssl_info) {
+		puts("In a SSL session");
+		printf("Client random:\n");
+		for(int i = 0; i < 32; i++) {
+			printf("%02x ", session.random[i]);
+		}
+		puts("");
 	}
 
 	/* ---- Read the request and respond ------------------------------- */
