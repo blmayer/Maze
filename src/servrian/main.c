@@ -21,7 +21,6 @@
 /* Global variables with default values */
 short PORT = 5000;
 char *PATH = "webpages/";
-char *KEY = "kjhgpyuihgybt78;7trb57fGIKhphhgbvdr5ioyhtfbcvffyttfJHTR^G%Sqd";
 
 /* Opens a TCP socket at the desired port and listens to connections */
 int main(int argc, char *argv[])
@@ -87,42 +86,42 @@ int main(int argc, char *argv[])
 	char temp[strlen(PATH) + 2];
 
 	/* Using a block to free variables */
-	{
-		/* Append / to the end of path */
-		int pathlen = strlen(PATH);
-		if (strncmp(PATH + pathlen - 1, "/", 1) != 0) {
-			sprintf(temp, "%s/", PATH);
-			PATH = temp;
-		}
+	// {
+	// 	/* Append / to the end of path */
+	// 	int pathlen = strlen(PATH);
+	// 	if (strncmp(PATH + pathlen - 1, "/", 1) != 0) {
+	// 		sprintf(temp, "%s/", PATH);
+	// 		PATH = temp;
+	// 	}
 
-		/* Check if some files exist */
-		char file_path[pathlen + 10];
-		sprintf(file_path, "%s400.html", PATH);
-		if (fopen(file_path, "r") == NULL) {
-			printf("File %s not found.\n", file_path);
-			exit(-1);
-		}
-		sprintf(file_path, "%s403.html", PATH);
-		if (fopen(file_path, "r") == NULL) {
-			printf("File %s not found.\n", file_path);
-			exit(-1);
-		}
-		sprintf(file_path, "%s404.html", PATH);
-		if (fopen(file_path, "r") == NULL) {
-			printf("File %s not found.\n", file_path);
-			return -1;
-		}
-		sprintf(file_path, "%s500.html", PATH);
-		if (fopen(file_path, "r") == NULL) {
-			printf("File %s not found.\n", file_path);
-			return -1;
-		}
-		sprintf(file_path, "%s501.html", PATH);
-		if (fopen(file_path, "r") == NULL) {
-			printf("File %s not found.\n", file_path);
-			return -1;
-		}
-	}
+	// 	/* Check if some files exist */
+	// 	char file_path[pathlen + 10];
+	// 	sprintf(file_path, "%s400.html", PATH);
+	// 	if (fopen(file_path, "r") == NULL) {
+	// 		printf("File %s not found.\n", file_path);
+	// 		exit(-1);
+	// 	}
+	// 	sprintf(file_path, "%s403.html", PATH);
+	// 	if (fopen(file_path, "r") == NULL) {
+	// 		printf("File %s not found.\n", file_path);
+	// 		exit(-1);
+	// 	}
+	// 	sprintf(file_path, "%s404.html", PATH);
+	// 	if (fopen(file_path, "r") == NULL) {
+	// 		printf("File %s not found.\n", file_path);
+	// 		return -1;
+	// 	}
+	// 	sprintf(file_path, "%s500.html", PATH);
+	// 	if (fopen(file_path, "r") == NULL) {
+	// 		printf("File %s not found.\n", file_path);
+	// 		return -1;
+	// 	}
+	// 	sprintf(file_path, "%s501.html", PATH);
+	// 	if (fopen(file_path, "r") == NULL) {
+	// 		printf("File %s not found.\n", file_path);
+	// 		return -1;
+	// 	}
+	// }
 
 	/* ---- Opening a socket ------------------------------------------- */
 
