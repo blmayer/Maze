@@ -10,6 +10,7 @@
 
 #include <sys/ioctl.h>
 #include <sys/poll.h>
+#include "tls.h"
 
 /*
  * Objects definitions

@@ -3,7 +3,7 @@
  *
  * PROJECT:	libwebng: A library to make encrypted requests over the web.
  *
- * AUTHOR:	Brian Mayer blmayer@icloud.com
+ * AUTHOR:	Brian Mayer bleemayer@gmail.com
  *
  * Copyright (C) 2018	Brian Mayer
  *
