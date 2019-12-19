@@ -53,4 +53,6 @@ unsigned short parse_extended_master_secret_ext(char **msg);
 
 unsigned short parse_session_ticket_ext(char **msg);
 
+unsigned char *write_key_share_ext(struct sslSession session);
+
 #endif
