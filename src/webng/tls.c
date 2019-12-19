@@ -1,3 +1,4 @@
+#include "webng.h"
 #include "tls.h"
 
 const char SUPPORTED_VERSIONS_EXT[6] = {0x0, 0x2b, 0x0, 0x2, 0x3, 0x4};
