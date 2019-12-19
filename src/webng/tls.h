@@ -4,16 +4,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 /* A structure to hold SSL information needed to exchange messages */
 struct sslSession {
 	char ver[2];
 	unsigned char type;
-	unsigned char random[32];
+	unsigned char cli_random[32];
+	unsigned char ser_random[32];
+	unsigned char public[32];
+	unsigned char id_len;
 	unsigned char id[32];
 	unsigned short cypher;
 	char *proto;
 };
+
+/* The supported verions is just 1.3 hardcoded */
+const char SUPPORTED_VERSIONS_EXT[6];
 
 /* Parses the ssl handshake */
 int do_tls_handshake(int conn, struct sslSession *session);
