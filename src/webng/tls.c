@@ -1,5 +1,6 @@
-#include "webng.h"
 #include "tls.h"
+
+const char SUPPORTED_VERSIONS_EXT[6] = {0x0, 0x2b, 0x0, 0x2, 0x3, 0x4};
 
 int do_tls_handshake(int conn, struct sslSession *session)
 {
@@ -8,7 +9,6 @@ int do_tls_handshake(int conn, struct sslSession *session)
 	if (mess_len < 5) {
 		return -1;
 	}
-
 
 	/* ---- Read the Record Layer -------------------------------------- */
 
@@ -37,10 +37,9 @@ int do_tls_handshake(int conn, struct sslSession *session)
 	char *fragment = malloc(data_len);
 	read(conn, fragment, data_len);
 	for (int i = 0; i < data_len; i++) {
-		printf("%02x ", (unsigned char) fragment[i]);
+		printf("%02x ", (unsigned char)fragment[i]);
 	}
 	puts("");
-
 
 	/* ---- Parse the fragment ----------------------------------------- */
 
@@ -63,9 +62,9 @@ int parse_handshake(int conn, char *fragment, struct sslSession *ssl_conn)
 
 	/* Length of the fragment */
 	unsigned int data_len = 0;
-	data_len = (unsigned char) *fragment++ << 16;
-	data_len += (unsigned char) *fragment++ << 8;
-	data_len += (unsigned char) *fragment++;
+	data_len = (unsigned char)*fragment++ << 16;
+	data_len += (unsigned char)*fragment++ << 8;
+	data_len += (unsigned char)*fragment++;
 	printf("handshake type: %d, data len: %d\n", type, data_len);
 
 	switch (type) {
@@ -92,15 +91,15 @@ int parse_client_hello(char *msg, struct sslSession *ssl_conn)
 
 	/* Random bytes */
 	for (int i = 0; i < 32; i++) {
-        ssl_conn->random[i] = *msg++;
-    }
+		ssl_conn->cli_random[i] = *msg++;
+	}
 
 	/* Session id */
-	unsigned char id_len = *msg++; // byte 35 has the session id length
-	printf("session id len: %d\n", id_len);
-	if (id_len > 0 && id_len < 33) {
+	ssl_conn->id_len = *msg++; // byte 35 has the session id length
+	printf("session id len: %d\n", ssl_conn->id_len);
+	if (ssl_conn->id_len > 0 && ssl_conn->id_len < 33) {
 		printf("session id: ");
-		for (int i = 0; i < id_len; i++) {
+		for (int i = 0; i < ssl_conn->id_len; i++) {
 			printf("%02x ", *msg);
 			ssl_conn->id[i] = *msg++;
 		}
@@ -112,7 +111,7 @@ int parse_client_hello(char *msg, struct sslSession *ssl_conn)
 	ciphers_len += *msg++;
 	printf("ciphers len: %d\n", ciphers_len);
 	for (int i = 0; i < ciphers_len; i++) {
-		printf("%02x ", (unsigned char) *msg++);
+		printf("%02x ", (unsigned char)*msg++);
 	}
 
 	/* Compression methods */
@@ -135,10 +134,26 @@ int parse_client_hello(char *msg, struct sslSession *ssl_conn)
 int send_server_hello(int conn, struct sslSession *ssl_conn)
 {
 	/* Calculate length of data */
-	unsigned short server_hello_len = 1 + 2 + 2 + 1 + 3;
-	
+	unsigned short server_hello_len = 5;  // Record header
+	server_hello_len += 4;		      // Handshake header
+	server_hello_len += 2;		      // Server version
+	server_hello_len += 32;		      // Server random
+	server_hello_len += 1;		      // id length indicator
+	server_hello_len += ssl_conn->id_len; // Client id length
+	server_hello_len += 2;		      // Cypher len
+	server_hello_len += 1;		      // Compression method
+	server_hello_len += 2;		      // Extensions length indicator
+	server_hello_len += 6;		      // Supported versions len
+	server_hello_len += 40; // Key share length
+
+	/* Allocate the calculated length */
+	unsigned char server_hello_data[server_hello_len];
+
 	/* Generate 32 bytes of random data */
-
-
+	int rand = open("/dev/urandom", O_RDONLY);
+	if(rand < 0) {
+		return rand;
+	}
+	read(rand, &server_hello_data[11], 32);
 	return 0;
 }
