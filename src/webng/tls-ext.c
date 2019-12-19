@@ -1,3 +1,4 @@
+#include "webng.h"
 #include "tls.h"
 
 /*
@@ -17,7 +18,7 @@ int parse_extensions(char *msg, struct sslSession *ssl_conn)
 		/* Extension id or type */
 		unsigned short ext_type = *msg++ << 8;
 		ext_type += *msg++;
-        exts_len -= 2;
+		exts_len -= 2;
 		printf("extension: %d\n", ext_type);
 
 		/* Continue parsing with the correct method */
@@ -46,16 +47,16 @@ int parse_extensions(char *msg, struct sslSession *ssl_conn)
 			puts("Reading protocol negotiation extension");
 			exts_len -= parse_proto_negotiation_ext(&msg);
 			break;
-        case 22:
-            puts("Reading Encrypt-then-MAC extension");
-            exts_len -= parse_encrypt_then_mac_ext(&msg);
+		case 22:
+			puts("Reading Encrypt-then-MAC extension");
+			exts_len -= parse_encrypt_then_mac_ext(&msg);
 			break;
-        case 23:
-            puts("Reading Extended Master Secret Extension");
-            exts_len -= parse_extended_master_secret_ext(&msg);
-            break;
-        case 35:
-            puts("Reading SessionTicket TLS Extension");
+		case 23:
+			puts("Reading Extended Master Secret Extension");
+			exts_len -= parse_extended_master_secret_ext(&msg);
+			break;
+		case 35:
+			puts("Reading SessionTicket TLS Extension");
 			exts_len -= parse_session_ticket_ext(&msg);
 			break;
 		default:
@@ -75,7 +76,7 @@ unsigned short parse_server_name_ext(char **msg)
 	/* Server name extension length */
 	unsigned short ext_len = *(*msg)++ << 8;
 	ext_len += *(*msg)++;
-	printf("extension len: %d\n", ext_len +2);
+	printf("extension len: %d\n", ext_len + 2);
 
 	/* This is a list */
 	unsigned short list_len = *(*msg)++ << 8;
@@ -240,39 +241,57 @@ unsigned short parse_proto_negotiation_ext(char **msg)
 
 unsigned short parse_encrypt_then_mac_ext(char **msg)
 {
-    /* Encrypt-on-MAC extension length */
+	/* Encrypt-on-MAC extension length */
 	unsigned short ext_len = *(*msg)++ << 8;
 	ext_len += *(*msg)++;
 	printf("extension len: %d\n", ext_len + 2);
 
-    /* This must be zero */
-    return ext_len + 2;
+	/* This must be zero */
+	return ext_len + 2;
 }
 
 unsigned short parse_extended_master_secret_ext(char **msg)
 {
-    /* Extended master secret extension length */
-    unsigned short ext_len = *(*msg)++ << 8;
-	ext_len += *(*msg)++;
-	printf("extension len: %d\n", ext_len + 2);
-
-    /* This must be zero */
-    return ext_len + 2;
-}
-
-unsigned short parse_session_ticket_ext(char **msg)
-{
-    /* Ticket extension length */
+	/* Extended master secret extension length */
 	unsigned short ext_len = *(*msg)++ << 8;
 	ext_len += *(*msg)++;
 	printf("extension len: %d\n", ext_len + 2);
 
-    /* We don't resume session tickets, skip the bytes */
-    for (int i = 0; i < ext_len; i++) {
+	/* This must be zero */
+	return ext_len + 2;
+}
+
+unsigned short parse_session_ticket_ext(char **msg)
+{
+	/* Ticket extension length */
+	unsigned short ext_len = *(*msg)++ << 8;
+	ext_len += *(*msg)++;
+	printf("extension len: %d\n", ext_len + 2);
+
+	/* We don't resume session tickets, skip the bytes */
+	for (int i = 0; i < ext_len; i++) {
 		printf("%02x ", **msg++);
 	}
-    puts("");
+	puts("");
 
-    puts("Parsed session ticket");
-    return ext_len + 2;
+	puts("Parsed session ticket");
+	return ext_len + 2;
+}
+
+unsigned char *write_key_share_ext(struct sslSession session)
+{
+	/**
+	 * In order these bytes are
+	 * The first two first identify the extension
+	 * Second couple is the length of the extension
+	 * Third couple is the value for the x25519 curve
+	 * Then the key size: 32 bytes
+	 */
+	unsigned static char ext_data[40] = {0, 0x33, 0, 0x24, 0, 0x1d, 0, 0x20};
+
+	/* Fill with the public key */
+	for(int i = 0; i < 32; i++) {
+		ext_data[i+8] = session.public[i];
+	}
+	return ext_data;
 }
