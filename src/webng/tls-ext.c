@@ -293,5 +293,16 @@ unsigned char *write_key_share_ext(struct sslSession session)
 	for(int i = 0; i < 32; i++) {
 		ext_data[i+8] = session.public[i];
 	}
-	return ext_data;
+
+int write_supported_versions_ext(unsigned char *buff)
+{
+	/* The supported verions is just 1.3 hardcoded */
+	*buff = 0;
+	buff[1] = 0x2b;
+	buff[2] = 0;
+	buff[3] = 0x2;
+	buff[4] = 0x3;
+	buff[5] = 0x4;
+
+	return 6;
 }
