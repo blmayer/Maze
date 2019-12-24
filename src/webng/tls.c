@@ -43,6 +43,10 @@ int do_tls_handshake(int conn, struct tlsSession *session)
 	/* ---- Parse the fragment ----------------------------------------- */
 
 	switch (header[0]) {
+	case 21:
+		puts("parsing alert message");
+		parse_alert_message(fragment);
+		break;
 	case 22:
 		puts("Parsing a TLS handshake");
 		parse_handshake(conn, fragment, session);
@@ -82,6 +86,19 @@ int parse_handshake(int conn, unsigned char *fragment, struct tlsSession *ssl)
 
 int parse_alert_message(unsigned char *fragment)
 {
+	printf("alert level: %d\n", *fragment++);
+	printf("alert description: %d\n", *fragment++);
+	return 0;
+}
+
+int parse_client_hello(unsigned char *msg, struct tlsSession *session)
+{
+	/* Clear some fields */
+	session->renegotiation_set = 0;
+	session->master_secret_set = 0;
+	session->cipher[0] = 0;
+	session->cipher[1] = 0;
+
 	/* Version: for now only TLS 1.3 is supported */
 	printf("version: %d.%d\n", msg[0], msg[1]);
 	if (*msg++ != 3 || *msg++ != 3) {
