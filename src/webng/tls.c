@@ -33,10 +33,10 @@ int do_tls_handshake(int conn, struct tlsSession *session)
 	printf("data_len: %d\n", data_len);
 
 	/* Fragment */
-	char *fragment = malloc(data_len);
+	unsigned char *fragment = malloc(data_len);
 	read(conn, fragment, data_len);
 	for (int i = 0; i < data_len; i++) {
-		printf("%02x ", (unsigned char)fragment[i]);
+		printf("%02x ", fragment[i]);
 	}
 	puts("");
 
@@ -79,7 +79,7 @@ int parse_handshake(int conn, unsigned char *fragment, struct tlsSession *ssl)
 	return 0;
 }
 
-int parse_client_hello(char *msg, struct sslSession *ssl_conn)
+int parse_alert_message(unsigned char *fragment)
 {
 	/* Version: for now only TLS 1.3 is supported */
 	printf("version: %d.%d\n", msg[0], msg[1]);
