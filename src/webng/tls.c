@@ -73,7 +73,7 @@ int parse_handshake(int conn, unsigned char *fragment, struct tlsSession *ssl)
 	switch (type) {
 	case 1:
 		puts("Handshake is a client hello");
-		parse_client_hello(fragment, ssl_conn);
+		parse_client_hello(fragment, ssl);
 
 		/* Send response */
 		send_server_hello(conn, ssl);
@@ -108,17 +108,17 @@ int parse_client_hello(unsigned char *msg, struct tlsSession *session)
 
 	/* Random bytes */
 	for (int i = 0; i < 32; i++) {
-		ssl_conn->cli_random[i] = *msg++;
+		session->cli_random[i] = *msg++;
 	}
 
 	/* Session id */
-	ssl_conn->id_len = *msg++; // byte 35 has the session id length
-	printf("session id len: %d\n", ssl_conn->id_len);
-	if (ssl_conn->id_len > 0 && ssl_conn->id_len < 33) {
+	session->id_len = *msg++; // byte 35 has the session id length
+	printf("session id len: %d\n", session->id_len);
+	if (session->id_len > 0 && session->id_len < 33) {
 		printf("session id: ");
-		for (int i = 0; i < ssl_conn->id_len; i++) {
+		for (int i = 0; i < session->id_len; i++) {
 			printf("%02x ", *msg);
-			ssl_conn->id[i] = *msg++;
+			session->id[i] = *msg++;
 		}
 		puts("");
 	}
@@ -149,8 +149,7 @@ int parse_client_hello(unsigned char *msg, struct tlsSession *session)
 
 	/* Extensions */
 	puts("Parsing extensions");
-	parse_extensions(msg, ssl_conn);
-	puts("Done parsing client hello");
+	parse_extensions(msg, session);
 
 	return 0;
 }
