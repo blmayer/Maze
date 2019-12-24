@@ -81,10 +81,8 @@ int parse_extensions(unsigned char *msg, struct tlsSession *session)
 			break;
 		default:
 			printf("Unknown extension: %d\n", ext_type);
-			unsigned short ext_len = *msg++ << 8;
-			ext_len += *msg++;
-			printf("this ext len: %d\n", ext_len);
-			exts_len -= ext_len;
+			exts_len -= parse_unknown_ext(&msg);
+			break;
 		}
 	}
 

@@ -65,7 +65,7 @@ unsigned short parse_signature_algorithms_ext(char **msg);
 
 unsigned short parse_use_srtp_ext(char **msg);
 
-unsigned short parse_proto_negotiation_ext(char **msg);
+short parse_unknown_ext(unsigned char **msg);
 
 unsigned short parse_encrypt_then_mac_ext(char **msg);
 
