@@ -1,4 +1,3 @@
-#include "webng.h"
 #include "tls.h"
 #include "webng.h"
 
@@ -8,12 +7,11 @@
 int parse_extensions(unsigned char *msg, struct tlsSession *session)
 {
 	/* Length of all extensions */
-	unsigned short exts_len = *msg++ << 8;
+	short exts_len = *msg++ << 8;
 	exts_len += *msg++;
 
 	/* Loop in all extensions */
 	while (exts_len) {
-		sleep(1);
 		printf("extensions len: %d\n", exts_len);
 
 		/* Extension id or type */
@@ -75,12 +73,12 @@ int parse_extensions(unsigned char *msg, struct tlsSession *session)
 short parse_server_name_ext(unsigned char **msg)
 {
 	/* Server name extension length */
-	unsigned short ext_len = *(*msg)++ << 8;
+	short ext_len = *(*msg)++ << 8;
 	ext_len += *(*msg)++;
 	printf("extension len: %d\n", ext_len + 2);
 
 	/* This is a list */
-	unsigned short list_len = *(*msg)++ << 8;
+	short list_len = *(*msg)++ << 8;
 	list_len += *(*msg)++;
 	printf("Server names list len: %d\n", list_len);
 
@@ -91,7 +89,7 @@ short parse_server_name_ext(unsigned char **msg)
 		printf("name type: %d\n", name_type);
 
 		/* Case hostname */
-		unsigned short name_len;
+		short name_len;
 		if (name_type == 0) {
 			/* String length */
 			name_len = *(*msg)++ << 8;
@@ -121,12 +119,12 @@ short parse_server_name_ext(unsigned char **msg)
 short parse_supported_groups_ext(unsigned char **msg)
 {
 	/* Supported groups extension length */
-	unsigned short ext_len = *(*msg)++ << 8;
+	short ext_len = *(*msg)++ << 8;
 	ext_len += *(*msg)++;
 	printf("extension len: %d\n", ext_len + 2);
 
 	/* This is a list */
-	unsigned short list_len = *(*msg)++ << 8;
+	short list_len = *(*msg)++ << 8;
 	list_len += *(*msg)++;
 	printf("Supported groups list len: %d\n", list_len);
 
@@ -143,7 +141,7 @@ short parse_supported_groups_ext(unsigned char **msg)
 short parse_ec_point_formats_ext(unsigned char **msg)
 {
 	/* EC point formats extension length */
-	unsigned short ext_len = *(*msg)++ << 8;
+	short ext_len = *(*msg)++ << 8;
 	ext_len += *(*msg)++;
 	printf("extension len: %d\n", ext_len + 2);
 
@@ -160,12 +158,12 @@ short parse_ec_point_formats_ext(unsigned char **msg)
 short parse_signature_algorithms_ext(unsigned char **msg)
 {
 	/* Signature algorithms extension length */
-	unsigned short ext_len = *(*msg)++ << 8;
+	short ext_len = *(*msg)++ << 8;
 	ext_len += *(*msg)++;
 	printf("extension len: %d\n", ext_len + 2);
 
 	/* This is a list */
-	unsigned short list_len = *(*msg)++ << 8;
+	short list_len = *(*msg)++ << 8;
 	list_len += *(*msg)++;
 	printf("algorithms list len: %d\n", list_len);
 
@@ -207,12 +205,12 @@ short parse_use_srtp_ext(unsigned char **msg)
 short parse_proto_negotiation_ext(unsigned char **msg)
 {
 	/* App-Layer protocol negotiation length */
-	unsigned short ext_len = *(*msg)++ << 8;
+	short ext_len = *(*msg)++ << 8;
 	ext_len += *(*msg)++;
 	printf("extension len: %d\n", ext_len + 2);
 
 	/* This is a list */
-	unsigned short list_len = *(*msg)++ << 8;
+	short list_len = *(*msg)++ << 8;
 	list_len += *(*msg)++;
 	printf("protocol names list len: %d\n", list_len);
 
@@ -243,7 +241,7 @@ short parse_proto_negotiation_ext(unsigned char **msg)
 unsigned short parse_encrypt_then_mac_ext(char **msg)
 {
 	/* Encrypt-on-MAC extension length */
-	unsigned short ext_len = *(*msg)++ << 8;
+	short ext_len = *(*msg)++ << 8;
 	ext_len += *(*msg)++;
 	printf("extension len: %d\n", ext_len + 2);
 
@@ -254,7 +252,7 @@ unsigned short parse_encrypt_then_mac_ext(char **msg)
 unsigned short parse_extended_master_secret_ext(char **msg)
 {
 	/* Extended master secret extension length */
-	unsigned short ext_len = *(*msg)++ << 8;
+	short ext_len = *(*msg)++ << 8;
 	ext_len += *(*msg)++;
 	printf("extension len: %d\n", ext_len + 2);
 

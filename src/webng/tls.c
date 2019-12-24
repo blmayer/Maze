@@ -27,7 +27,7 @@ int do_tls_handshake(int conn, struct sslSession *session)
 	session->ver[1] = header[2];
 
 	/* Length of data fragment to read */
-	unsigned short data_len = (header[3] << 8) + header[4];
+	short data_len = (header[3] << 8) + header[4];
 
 	/* Some prints */
 	printf("type: %u\n", header[0]);
@@ -108,7 +108,7 @@ int parse_client_hello(char *msg, struct sslSession *ssl_conn)
 	}
 
 	/* Cipher suites parsing */
-	unsigned short ciphers_len = *msg++ << 8;
+	short ciphers_len = *msg++ << 8;
 	ciphers_len += *msg++;
 	printf("ciphers len: %d\n", ciphers_len);
 	for (int i = 0; i < ciphers_len; i++) {
@@ -116,8 +116,8 @@ int parse_client_hello(char *msg, struct sslSession *ssl_conn)
 	}
 
 	/* Compression methods */
-	unsigned short cmp_len = *msg++;
-	printf("\ncompression len: %d\n", cmp_len);
+	short cmp_len = *msg++;
+	printf("compression len: %d\n", cmp_len);
 
 	/* TLS 1.3 only has compression 0 */
 	for (int i = 0; i < cmp_len; i++) {
