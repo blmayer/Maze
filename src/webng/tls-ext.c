@@ -46,6 +46,10 @@ int parse_extensions(unsigned char *msg, struct tlsSession *session)
 			puts("Reading protocol negotiation extension");
 			exts_len -= parse_proto_negotiation_ext(&msg);
 			break;
+		case 21:
+			puts("Reading Padding extension");
+			exts_len -= parse_padding_ext(&msg);
+			break;
 		case 22:
 			puts("Reading Encrypt-then-MAC extension");
 			exts_len -= parse_encrypt_then_mac_ext(&msg);
@@ -238,7 +242,20 @@ short parse_proto_negotiation_ext(unsigned char **msg)
 	return ext_len + 2;
 }
 
-unsigned short parse_encrypt_then_mac_ext(char **msg)
+short parse_padding_ext(unsigned char **msg)
+{
+	/* Padding extension length */
+	short ext_len = *(*msg)++ << 8;
+	ext_len += *(*msg)++;
+	printf("extension len: %d\n", ext_len + 2);
+
+	printf("skipping %d bytes\n", ext_len);
+	*(*msg) += ext_len;
+
+	return ext_len + 2;
+}
+
+short parse_encrypt_then_mac_ext(unsigned char **msg)
 {
 	/* Encrypt-on-MAC extension length */
 	short ext_len = *(*msg)++ << 8;
