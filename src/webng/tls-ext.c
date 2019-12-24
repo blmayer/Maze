@@ -199,8 +199,8 @@ short parse_signature_algorithms_ext(unsigned char **msg)
 short parse_use_srtp_ext(unsigned char **msg)
 {
 	/* SRTP Protection Profile */
-	unsigned short profile = **msg++ << 8;
-	profile += **msg++;
+	short profile = *(*msg)++ << 8;
+	profile += *(*msg)++;
 	printf("profiles: %d\n", profile);
 
 	/* Read profiles */
@@ -296,7 +296,7 @@ short parse_ext_master_secret_ext(unsigned char **msg, struct tlsSession *ses)
 short parse_session_ticket_ext(unsigned char **msg)
 {
 	/* Ticket extension length */
-	unsigned short ext_len = *(*msg)++ << 8;
+	short ext_len = *(*msg)++ << 8;
 	ext_len += *(*msg)++;
 	printf("extension len: %d\n", ext_len + 2);
 
