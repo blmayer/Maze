@@ -205,17 +205,17 @@ short parse_use_srtp_ext(unsigned char **msg)
 
 	/* Read profiles */
 	while (profile--) {
-		printf("Profile value: %02x ", **msg++);
-		printf("%02x\n", **msg++);
+		printf("Profile value: %02x ", *(*msg)++);
+		printf("%02x\n", *(*msg)++);
 	}
 
 	/* Length of SRTP MKI */
-	unsigned char mki_len = **msg++;
+	unsigned char mki_len = *(*msg)++;
 	printf("mki_len: %d\n", mki_len);
 
 	/* Read MKI */
 	while (mki_len--) {
-		printf("%c", **msg++);
+		printf("%c", *(*msg)++);
 	}
 
 	return 2 + profile + mki_len;
@@ -302,11 +302,11 @@ short parse_session_ticket_ext(unsigned char **msg)
 
 	/* We don't resume session tickets, skip the bytes */
 	for (int i = 0; i < ext_len; i++) {
-		printf("%02x ", **msg++);
+		printf("%02x ", *(*msg)++);
 	}
 	puts("");
 
-	puts("Parsed session ticket");
+	puts("parsed session ticket");
 	return ext_len + 2;
 }
 
