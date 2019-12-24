@@ -437,8 +437,8 @@ int write_key_share_ext(unsigned char *buff, struct tlsSession session)
 	unsigned static char ext_data[40] = {0, 0x33, 0, 0x24, 0, 0x1d, 0, 0x20};
 
 	/* Fill with the public key */
-	for(int i = 0; i < 32; i++) {
-		ext_data[i+8] = session.public[i];
+	for (int i = 0; i < 32; i++) {
+		buff[i + 8] = session.ser_public[i];
 	}
 
 int write_supported_versions_ext(unsigned char *buff)
