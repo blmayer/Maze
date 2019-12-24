@@ -110,8 +110,15 @@ int parse_alert_message(unsigned char *fragment)
 	short ciphers_len = *msg++ << 8;
 	ciphers_len += *msg++;
 	printf("ciphers len: %d\n", ciphers_len);
-	for (int i = 0; i < ciphers_len; i++) {
-		printf("%02x ", (unsigned char)*msg++);
+	for (int i = 0; i < ciphers_len; i += 2) {
+		printf("%02x ", *msg++);
+		printf("%02x\n", *msg++);
+
+		/* For now the only supported is 13 01 */
+		if (*(msg - 2) == 0x13 && *(msg - 1) == 0x01) {
+			session->cipher[0] = *(msg - 2);
+			session->cipher[1] = *(msg - 1);
+		}
 	}
 
 	/* Compression methods */

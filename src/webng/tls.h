@@ -10,6 +10,7 @@
 struct tlsSession {
 	char ver[2];
 	unsigned char type;
+	unsigned char cipher[2];
 	unsigned char cli_random[32];
 	unsigned char ser_random[32];
 	unsigned char cli_public[32];
@@ -17,7 +18,6 @@ struct tlsSession {
 	unsigned char ser_private[32];
 	unsigned char id_len;
 	unsigned char id[32];
-	unsigned short cypher;
 	char *proto;
 };
 
