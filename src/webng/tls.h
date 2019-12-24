@@ -7,7 +7,7 @@
 #include <fcntl.h>
 
 /* A structure to hold SSL information needed to exchange messages */
-struct sslSession {
+struct tlsSession {
 	char ver[2];
 	unsigned char type;
 	unsigned char cli_random[32];
@@ -23,7 +23,7 @@ struct sslSession {
 const char SUPPORTED_VERSIONS_EXT[6];
 
 /* Parses the ssl handshake */
-int do_tls_handshake(int conn, struct sslSession *session);
+int do_tls_handshake(int conn, struct tlsSession *session);
 
 /* Parses the internal tls fragment */
 int parse_handshake(int conn, char *fragment, struct sslSession *ssl_conn);

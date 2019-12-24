@@ -24,7 +24,7 @@ short send_response(int cli_conn)
 
 	/* ---- Check for an SSL/TLS handshake ----------------------------- */
 
-	struct sslSession session;
+	struct tlsSession session;
 	int ssl_info = do_tls_handshake(cli_conn, &session);
 	if (ssl_info) {
 		puts("In a SSL session");

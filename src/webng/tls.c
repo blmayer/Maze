@@ -1,9 +1,7 @@
 #include "tls.h"
 #include "webng.h"
 
-const char SUPPORTED_VERSIONS_EXT[6] = {0x0, 0x2b, 0x0, 0x2, 0x3, 0x4};
-
-int do_tls_handshake(int conn, struct sslSession *session)
+int do_tls_handshake(int conn, struct tlsSession *session)
 {
 	/* Wait for minimum data */
 	int mess_len = get_ready_bytes(conn);
@@ -56,7 +54,7 @@ int do_tls_handshake(int conn, struct sslSession *session)
 	return 1;
 }
 
-int parse_handshake(int conn, char *fragment, struct sslSession *ssl_conn)
+int parse_handshake(int conn, unsigned char *fragment, struct tlsSession *ssl)
 {
 	/* Get handshake type */
 	char type = *fragment++;
@@ -132,7 +130,7 @@ int parse_client_hello(char *msg, struct sslSession *ssl_conn)
 	return 0;
 }
 
-int send_server_hello(int conn, struct sslSession *ssl_conn)
+int send_server_hello(int conn, struct tlsSession *session)
 {
 	/* Calculate length of data */
 	unsigned short server_hello_len = 5;  // Record header
