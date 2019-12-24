@@ -29,7 +29,27 @@ int do_tls_handshake(int conn, struct tlsSession *session);
 int parse_handshake(int conn, char *fragment, struct sslSession *ssl_conn);
 
 /* Parse the tls client hello message */
-int parse_client_hello(char *message, struct sslSession *ssl_conn);
+int parse_client_hello(unsigned char *message, struct tlsSession *session);
+
+int send_server_hello(int conn, struct tlsSession *session);
+
+int send_server_cert(int conn, struct tlsSession *session);
+
+int parse_extensions(unsigned char *msg, struct tlsSession *session);
+
+short parse_server_name_ext(unsigned char **msg);
+
+short parse_supported_groups_ext(unsigned char **msg);
+
+short parse_ec_point_formats_ext(unsigned char **msg);
+
+short parse_signature_algorithms_ext(unsigned char **msg);
+
+short parse_use_srtp_ext(unsigned char **msg);
+
+short parse_proto_negotiation_ext(unsigned char **msg);
+
+short parse_padding_ext(unsigned char **msg);
 
 int send_server_hello(int conn, struct sslSession *ssl_conn);
 

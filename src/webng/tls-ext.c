@@ -62,6 +62,23 @@ int parse_extensions(unsigned char *msg, struct tlsSession *session)
 			puts("Reading SessionTicket TLS Extension");
 			exts_len -= parse_session_ticket_ext(&msg);
 			break;
+		case 43:
+			puts("Reading Supported Versions TLS Extension");
+			exts_len -= parse_suported_versions_ext(&msg, session);
+			break;
+		case 45:
+			puts("Reading Pre-Shared Key Exchange Modes TLS "
+			     "Extension");
+			exts_len -= parse_key_exchange_modes_ext(&msg);
+			break;
+		case 51:
+			puts("Reading KeyShare TLS Extension");
+			exts_len -= parse_key_share_ext(&msg, session);
+			break;
+		case 65281:
+			puts("Reading Renegotiation info TLS Extension");
+			exts_len -= parse_renegotiation_ext(&msg, session);
+			break;
 		default:
 			printf("Unknown extension: %d\n", ext_type);
 			unsigned short ext_len = *msg++ << 8;
@@ -266,12 +283,13 @@ short parse_encrypt_then_mac_ext(unsigned char **msg)
 	return ext_len + 2;
 }
 
-unsigned short parse_extended_master_secret_ext(char **msg)
+short parse_ext_master_secret_ext(unsigned char **msg, struct tlsSession *ses)
 {
 	/* Extended master secret extension length */
 	short ext_len = *(*msg)++ << 8;
 	ext_len += *(*msg)++;
 	printf("extension len: %d\n", ext_len + 2);
+	ses->master_secret_set = 1;
 
 	/* This must be zero */
 	return ext_len + 2;
@@ -294,7 +312,122 @@ short parse_session_ticket_ext(unsigned char **msg)
 	return ext_len + 2;
 }
 
-unsigned char *write_key_share_ext(struct sslSession session)
+short parse_suported_versions_ext(unsigned char **msg, struct tlsSession *ses)
+{
+	short ext_len = *(*msg)++ << 8;
+	ext_len += *(*msg)++;
+	printf("extension len: %d\n", ext_len + 2);
+
+	unsigned char versions_len = *(*msg)++;
+	for (int i = 0; i < versions_len; i++) {
+		printf("%02x ", *(*msg)++);
+		if (*(*msg - 1) == 0x03 && **msg == 0x04) {
+			ses->ver[0] = 0x03;
+			ses->ver[1] = 0x04;
+		}
+	}
+	puts("");
+
+	puts("parsed supported versions extension");
+	return ext_len + 2;
+}
+
+short parse_key_exchange_modes_ext(unsigned char **msg)
+{
+	short ext_len = *(*msg)++ << 8;
+	ext_len += *(*msg)++;
+	printf("extension len: %d\n", ext_len + 2);
+
+	for (int i = 0; i < ext_len; i++) {
+		printf("%02x ", *(*msg)++);
+	}
+	puts("");
+
+	puts("parsed key modes ticket");
+	return ext_len + 2;
+}
+
+short parse_key_share_ext(unsigned char **msg, struct tlsSession *session)
+{
+	/* Key share extension length */
+	short ext_len = *(*msg)++ << 8;
+	ext_len += *(*msg)++;
+	printf("key share extension len: %d\n", ext_len + 2);
+
+	/* Size of key share */
+	short key_share_len = *(*msg)++ << 8;
+	key_share_len += *(*msg)++;
+	printf("key share len: %d\n", key_share_len);
+
+	/* Curve type */
+	printf("%02x ", *(*msg)++);
+	printf("%02x\n", *(*msg)++);
+
+	/* Size of key */
+	short key_len = *(*msg)++ << 8;
+	key_len += *(*msg)++;
+	printf("key len: %d\n", key_len);
+
+	/* Save the key */
+	for (int i = 0; i < key_len; i++) {
+		session->cli_public[i] = *(*msg)++;
+		printf("%02x ", **msg);
+	}
+	puts("");
+
+	puts("Parsed key share extension");
+	return ext_len + 2;
+}
+
+short parse_renegotiation_ext(unsigned char **msg, struct tlsSession *ses)
+{
+	/* Renegotiation extension length */
+	short ext_len = *(*msg)++ << 8;
+	ext_len += *(*msg)++;
+	printf("renegotiation extension len: %d\n", ext_len + 2);
+
+	/* Skip the bytes */
+	for (int i = 0; i < ext_len; i++) {
+		printf("%02x ", *(*msg)++);
+	}
+	puts("");
+
+	ses->renegotiation_set = 1;
+
+	puts("Parsed renegotiation extension");
+	return ext_len + 2;
+}
+
+short parse_unknown_ext(unsigned char **msg)
+{
+	/* Unknown extension length */
+	short ext_len = *(*msg)++ << 8;
+	ext_len += *(*msg)++;
+	printf("unknown extension len: %d\n", ext_len + 2);
+
+	/* Skip the bytes */
+	for (int i = 0; i < ext_len; i++) {
+		printf("%02x ", *(*msg)++);
+	}
+	puts("");
+
+	puts("skipped Unknown extension");
+	return ext_len + 2;
+}
+
+int write_renegotiation_ext(unsigned char *buff)
+{
+	/* The renegotiation info ext is hardcoded */
+	*buff = 0xff;
+	buff[1] = 0x01;
+	buff[2] = 0x00;
+	buff[3] = 0x01;
+	buff[4] = 0x00;
+
+	return 5;
+}
+
+int write_key_share_ext(unsigned char *buff, struct tlsSession session)
 {
 	/**
 	 * In order these bytes are
@@ -322,3 +455,5 @@ int write_supported_versions_ext(unsigned char *buff)
 
 	return 6;
 }
+
+int write_master_secret_ext(unsigned char *buff) {}
