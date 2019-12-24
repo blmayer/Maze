@@ -14,12 +14,6 @@ short serve_get(short conn, struct response res)
 {
 	/* ---- Status checking -------------------------------------------- */
 
-	/* If the user sends the token respond with the correct page */
-	// if(res.auth != NULL) {
-	// 	/* Check authorization cases */
-	// 	res.status = authorization(res.auth);
-	// }
-
 	/* Choose page based on the status */
 	switch (res.status) {
 	case 400:
