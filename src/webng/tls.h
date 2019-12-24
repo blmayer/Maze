@@ -1,10 +1,10 @@
 #ifndef TLS_H
 #define TLS_H
 
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <fcntl.h>
 
 /* A structure to hold SSL information needed to exchange messages */
 struct tlsSession {

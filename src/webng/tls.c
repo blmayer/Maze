@@ -72,7 +72,8 @@ int parse_handshake(int conn, unsigned char *fragment, struct tlsSession *ssl)
 		parse_client_hello(fragment, ssl_conn);
 
 		/* Send response */
-		send_server_hello(conn, ssl_conn);
+		send_server_hello(conn, ssl);
+		puts("sent server hello");
 		break;
 	}
 
@@ -133,26 +134,86 @@ int parse_alert_message(unsigned char *fragment)
 int send_server_hello(int conn, struct tlsSession *session)
 {
 	/* Calculate length of data */
-	unsigned short server_hello_len = 5;  // Record header
-	server_hello_len += 4;		      // Handshake header
-	server_hello_len += 2;		      // Server version
-	server_hello_len += 32;		      // Server random
-	server_hello_len += 1;		      // id length indicator
-	server_hello_len += ssl_conn->id_len; // Client id length
-	server_hello_len += 2;		      // Cypher len
-	server_hello_len += 1;		      // Compression method
-	server_hello_len += 2;		      // Extensions length indicator
-	server_hello_len += 6;		      // Supported versions len
-	server_hello_len += 40; // Key share length
+	short server_hello_len = 5;	  // Record header
+	server_hello_len += 4;		     // Handshake header
+	server_hello_len += 2;		     // Server version
+	server_hello_len += 32;		     // Server random
+	server_hello_len += 1;		     // id length indicator
+	server_hello_len += session->id_len; // Client id length
+	server_hello_len += 2;		     // Cypher len
+	server_hello_len += 1;		     // Compression method
+	server_hello_len += 2;		     // Extensions length indicator
+
+	/* Optional extensions */
+	short ext_len = 6; // Supported versions len
+	ext_len += 40;     // Key share length
+	if (session->renegotiation_set) {
+		ext_len += 5;
+	}
 
 	/* Allocate the calculated length */
-	unsigned char server_hello_data[server_hello_len];
+	unsigned char server_hello_data[server_hello_len + ext_len];
+
+	/* Fill in fields */
+	server_hello_data[0] = 0x16;
+	server_hello_data[1] = 0x03;
+	server_hello_data[2] = 0x03;
+	server_hello_data[3] = (server_hello_len + ext_len - 5) << 8;
+	server_hello_data[4] = server_hello_len + ext_len - 5;
+
+	/* Handshake header */
+	server_hello_data[5] = 0x02;
+	server_hello_data[6] = 0;
+	server_hello_data[7] = (server_hello_len + ext_len - 9) << 8;
+	server_hello_data[8] = server_hello_len + ext_len - 9;
+
+	/* Server version */
+	server_hello_data[9] = 0x03;
+	server_hello_data[10] = 0x03;
 
 	/* Generate 32 bytes of random data */
 	int rand = open("/dev/urandom", O_RDONLY);
-	if(rand < 0) {
+	if (rand < 0) {
 		return rand;
 	}
 	read(rand, &server_hello_data[11], 32);
+	close(rand);
+
+	/* Echo session id */
+	server_hello_data[43] = session->id_len;
+	for (int i = 0; i < session->id_len; i++) {
+		server_hello_data[44 + i] = session->id[i];
+	}
+	int offset = session->id_len + 44;
+
+	/* Cipher suite */
+	server_hello_data[offset++] = session->cipher[0];
+	server_hello_data[offset++] = session->cipher[1];
+
+	/* Compression method */
+	server_hello_data[offset++] = 0;
+
+	/* Extensions length */
+	server_hello_data[offset++] = ext_len << 8;
+	server_hello_data[offset++] = ext_len;
+
+	/* Key share ext */
+	offset += write_key_share_ext(&server_hello_data[offset], *session);
+
+	/* Supported versions ext */
+	offset += write_supported_versions_ext(&server_hello_data[offset]);
+
+	/* Renegotiation ext */
+	if (session->renegotiation_set) {
+		offset += write_renegotiation_ext(&server_hello_data[offset]);
+	}
+
+	puts("server hello bytes:");
+	for (int i = 0; i < server_hello_len + ext_len; i++) {
+		printf("%02x ", server_hello_data[i]);
+	}
+	puts("");
+	write(conn, &server_hello_data, server_hello_len);
+
 	return 0;
 }
