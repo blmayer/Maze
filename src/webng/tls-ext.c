@@ -434,12 +434,22 @@ int write_key_share_ext(unsigned char *buff, struct tlsSession session)
 	 * Third couple is the value for the x25519 curve
 	 * Then the key size: 32 bytes
 	 */
-	unsigned static char ext_data[40] = {0, 0x33, 0, 0x24, 0, 0x1d, 0, 0x20};
+	*buff = 0;
+	buff[1] = 0x33;
+	buff[2] = 0;
+	buff[3] = 0x24;
+	buff[4] = 0;
+	buff[5] = 0x1d;
+	buff[6] = 0;
+	buff[7] = 0x20;
 
 	/* Fill with the public key */
 	for (int i = 0; i < 32; i++) {
 		buff[i + 8] = session.ser_public[i];
 	}
+
+	return 40;
+}
 
 int write_supported_versions_ext(unsigned char *buff)
 {

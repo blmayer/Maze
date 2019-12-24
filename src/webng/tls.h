@@ -21,9 +21,6 @@ struct tlsSession {
 	char *proto;
 };
 
-/* The supported verions is just 1.3 hardcoded */
-const char SUPPORTED_VERSIONS_EXT[6];
-
 /* Parses the ssl handshake */
 int do_tls_handshake(int conn, struct tlsSession *session);
 
@@ -77,6 +74,6 @@ int write_key_share_ext(unsigned char *buff, struct tlsSession session);
 
 int write_supported_versions_ext(unsigned char *buff);
 
-unsigned char *write_key_share_ext(struct sslSession session);
+int write_master_secret_ext(unsigned char *buff);
 
 #endif
