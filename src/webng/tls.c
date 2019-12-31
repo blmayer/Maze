@@ -4,8 +4,10 @@
 int do_tls_handshake(int conn, struct tlsSession *session)
 {
 	/* Wait for minimum data */
+	puts("waiting ready bytes");
 	int mess_len = get_ready_bytes(conn);
-	if (mess_len < 5) {
+	if (!mess_len) {
+		puts("got less than 1 byte");
 		return -1;
 	}
 
@@ -50,11 +52,12 @@ int do_tls_handshake(int conn, struct tlsSession *session)
 	case 22:
 		puts("Parsing a TLS handshake");
 		parse_handshake(conn, fragment, session);
+		break;
 	}
+	free(fragment);
+	do_tls_handshake(conn, session);
 
 	puts("Done handshake");
-	free(fragment);
-
 	return 1;
 }
 
@@ -151,6 +154,26 @@ int parse_client_hello(unsigned char *msg, struct tlsSession *session)
 	puts("Parsing extensions");
 	parse_extensions(msg, session);
 
+	puts("client info:");
+	printf("tls version %02x %02x\n", session->ver[0], session->ver[1]);
+	puts("session id:");
+	for (int i = 0; i < session->id_len; i++) {
+		printf("%02x ", session->id[i]);
+	}
+	puts("");
+	printf("cipher: %02x %02x\n", session->cipher[0], session->cipher[1]);
+	puts("client random:");
+	for (int i = 0; i < 32; i++) {
+		printf("%02x ", session->cli_random[i]);
+	}
+	puts("");
+	puts("client public key:");
+	for (int i = 0; i < 32; i++) {
+		printf("%02x ", session->cli_public[i]);
+	}
+	puts("");
+	printf("Renegotiation ext: %d\n", session->renegotiation_set);
+	puts("Done parsing client hello");
 	return 0;
 }
 
@@ -194,13 +217,8 @@ int send_server_hello(int conn, struct tlsSession *session)
 	server_hello_data[9] = 0x03;
 	server_hello_data[10] = 0x03;
 
-	/* Generate 32 bytes of random data */
-	int rand = open("/dev/urandom", O_RDONLY);
-	if (rand < 0) {
-		return rand;
-	}
-	read(rand, &server_hello_data[11], 32);
-	close(rand);
+	/* Generate server random data and public key */
+	generate_server_keys(session);
 
 	/* Echo session id */
 	server_hello_data[43] = session->id_len;
@@ -240,3 +258,22 @@ int send_server_hello(int conn, struct tlsSession *session)
 
 	return 0;
 }
+
+int generate_server_keys(struct tlsSession *session)
+{
+	/* Generate 32 bytes for private key and server random */
+	int rand = open("/dev/urandom", O_RDONLY);
+	if (rand < 0) {
+		return rand;
+	}
+	read(rand, &session->ser_private, 32);
+	read(rand, &session->ser_random, 32);
+	close(rand);
+
+	/* Generate public key */
+	curve25519_mult(session->ser_private, session->ser_public);
+
+	return 1;
+}
+
+// int send_server_cert(int conn, struct tlsSession *session) {}
