@@ -19,6 +19,8 @@ struct tlsSession {
 	unsigned char id_len;
 	unsigned char id[32];
 	char *proto;
+	char renegotiation_set;
+	char master_secret_set;
 };
 
 /* Parses the ssl handshake */
@@ -31,6 +33,10 @@ int parse_alert_message(unsigned char *fragment);
 
 /* Parse the tls client hello message */
 int parse_client_hello(unsigned char *message, struct tlsSession *session);
+
+int generate_server_keys(struct tlsSession *session);
+
+int curve25519_mult(unsigned char *a, unsigned char *out);
 
 int send_server_hello(int conn, struct tlsSession *session);
 
@@ -54,7 +60,7 @@ short parse_padding_ext(unsigned char **msg);
 
 short parse_encrypt_then_mac_ext(unsigned char **msg);
 
-short parse_ext_master_secret_ext(unsigned char **msg, struct tlsSession *ses);
+short parse_master_secret_ext(unsigned char **msg, struct tlsSession *ses);
 
 short parse_session_ticket_ext(unsigned char **msg);
 

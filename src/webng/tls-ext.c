@@ -12,8 +12,6 @@ int parse_extensions(unsigned char *msg, struct tlsSession *session)
 
 	/* Loop in all extensions */
 	while (exts_len) {
-		printf("extensions len: %d\n", exts_len);
-
 		/* Extension id or type */
 		unsigned short ext_type = *msg++ << 8;
 		ext_type += *msg++;
@@ -56,7 +54,7 @@ int parse_extensions(unsigned char *msg, struct tlsSession *session)
 			break;
 		case 23:
 			puts("Reading Extended Master Secret Extension");
-			exts_len -= parse_extended_master_secret_ext(&msg);
+			exts_len -= parse_master_secret_ext(&msg, session);
 			break;
 		case 35:
 			puts("Reading SessionTicket TLS Extension");
@@ -281,7 +279,7 @@ short parse_encrypt_then_mac_ext(unsigned char **msg)
 	return ext_len + 2;
 }
 
-short parse_ext_master_secret_ext(unsigned char **msg, struct tlsSession *ses)
+short parse_master_secret_ext(unsigned char **msg, struct tlsSession *ses)
 {
 	/* Extended master secret extension length */
 	short ext_len = *(*msg)++ << 8;
@@ -464,4 +462,4 @@ int write_supported_versions_ext(unsigned char *buff)
 	return 6;
 }
 
-int write_master_secret_ext(unsigned char *buff) {}
+// int write_master_secret_ext(unsigned char *buff) {}
