@@ -28,10 +28,6 @@ short send_response(int cli_conn)
 	int ssl_info = do_tls_handshake(cli_conn, &session);
 	if (ssl_info) {
 		puts("In a SSL session");
-		printf("Client random:\n");
-		for(int i = 0; i < 32; i++) {
-			printf("%02x ", session.random[i]);
-		}
 		puts("");
 	}
 
@@ -51,6 +47,12 @@ receive:
 		return 0;
 	}
 
+	puts("received data:");
+	for (int i = 0; i < 517; i++) {
+		putchar(header[i]);
+	}
+	puts("");
+	sleep(3);
 	/* Populate our struct with request */
 	if (parse_request(header, &req) < 0) {
 		/* Bad request received */
