@@ -1,64 +1,45 @@
 #include "tls.h"
-#include "webng.h"
 
-int do_tls_handshake(int conn, struct tlsSession *session)
+int do_tls_handshake(int conn, unsigned char *msg, struct tlsSession *session)
 {
-	/* Wait for minimum data */
-	puts("waiting ready bytes");
-	int mess_len = get_ready_bytes(conn);
-	if (!mess_len) {
-		puts("got less than 1 byte");
-		return -1;
-	}
-
 	/* ---- Read the Record Layer -------------------------------------- */
 
-	/* First five bytes gives us enough info */
-	unsigned char header[5];
-	read(conn, header, 5);
-
 	/* Handshake type */
-	if (header[0] > 23 || header[0] < 20) {
-		return -2; // Not handshake!
+	if (msg[0] > 23 || msg[0] < 20) {
+		return 0; // Not handshake!
 	}
 
 	/* Version */
-	session->ver[0] = header[1];
-	session->ver[1] = header[2];
+	session->ver[0] = msg[1];
+	session->ver[1] = msg[2];
 
 	/* Length of data fragment to read */
-	short data_len = (header[3] << 8) + header[4];
+	short data_len = (msg[3] << 8) + msg[4];
 
 	/* Some prints */
-	printf("type: %u\n", header[0]);
+	printf("type: %u\n", msg[0]);
 	printf("version: %d.%d\n", session->ver[0], session->ver[1]);
 	printf("data_len: %d\n", data_len);
 
 	/* Fragment */
-	unsigned char *fragment = malloc(data_len);
-	read(conn, fragment, data_len);
 	for (int i = 0; i < data_len; i++) {
-		printf("%02x ", fragment[i]);
+		printf("%02x ", msg[i + 5]);
 	}
 	puts("");
 
 	/* ---- Parse the fragment ----------------------------------------- */
+	unsigned char *frag = &msg[5];
 
-	switch (header[0]) {
+	switch (msg[0]) {
 	case 21:
 		puts("parsing alert message");
-		parse_alert_message(fragment);
-		break;
+		return parse_alert_message(frag);
 	case 22:
 		puts("Parsing a TLS handshake");
-		parse_handshake(conn, fragment, session);
-		break;
+		return parse_handshake(conn, frag, session);
+	default:
+		return 0;
 	}
-	free(fragment);
-	do_tls_handshake(conn, session);
-
-	puts("Done handshake");
-	return 1;
 }
 
 int parse_handshake(int conn, unsigned char *fragment, struct tlsSession *ssl)
@@ -78,20 +59,27 @@ int parse_handshake(int conn, unsigned char *fragment, struct tlsSession *ssl)
 		puts("Handshake is a client hello");
 		parse_client_hello(fragment, ssl);
 
+		/* Check version */
+		if (ssl->ver[1] != 4) {
+			send_alert_message(conn, 70);
+			puts("sent alert 70");
+			return -1;
+		}
+
 		/* Send response */
 		send_server_hello(conn, ssl);
 		puts("sent server hello");
 		break;
 	}
 
-	return 0;
+	return 1;
 }
 
 int parse_alert_message(unsigned char *fragment)
 {
 	printf("alert level: %d\n", *fragment++);
 	printf("alert description: %d\n", *fragment++);
-	return 0;
+	return 2;
 }
 
 int parse_client_hello(unsigned char *msg, struct tlsSession *session)
@@ -175,6 +163,14 @@ int parse_client_hello(unsigned char *msg, struct tlsSession *session)
 	printf("Renegotiation ext: %d\n", session->renegotiation_set);
 	puts("Done parsing client hello");
 	return 0;
+}
+
+int send_alert_message(int conn, int mess_code)
+{
+	char message[7] = {21, 3, 3, 0, 2, 2, mess_code};
+
+	write(conn, &message, 7);
+	return 1;
 }
 
 int send_server_hello(int conn, struct tlsSession *session)
