@@ -24,7 +24,7 @@ struct tlsSession {
 };
 
 /* Parses the ssl handshake */
-int do_tls_handshake(int conn, struct tlsSession *session);
+int do_tls_handshake(int conn, unsigned char *msg, struct tlsSession *session);
 
 /* Parses the internal tls fragment */
 int parse_handshake(int conn, unsigned char *fragment, struct tlsSession *ssl);
@@ -37,6 +37,8 @@ int parse_client_hello(unsigned char *message, struct tlsSession *session);
 int generate_server_keys(struct tlsSession *session);
 
 int curve25519_mult(unsigned char *a, unsigned char *out);
+
+int send_alert_message(int conn, int mess_code);
 
 int send_server_hello(int conn, struct tlsSession *session);
 
