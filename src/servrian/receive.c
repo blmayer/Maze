@@ -15,21 +15,12 @@
 short send_response(int cli_conn)
 {
 	/* Initialize variables for reading the request */
-	// struct timeval tout = {5, 0}; // Timeout structure: 3 mins
 	struct request req;  // Create our request structure
 	struct response res; // And our response structure
 
 	/* Set the socket timeout */
+	// struct timeval tout = {180, 0}; // Timeout structure: 3 mins
 	// setsockopt(cli_conn, SOL_SOCKET, SO_RCVTIMEO, (char *)&tout, 18);
-
-	/* ---- Check for an SSL/TLS handshake ----------------------------- */
-
-	struct tlsSession session;
-	int ssl_info = do_tls_handshake(cli_conn, &session);
-	if (ssl_info) {
-		puts("In a SSL session");
-		puts("");
-	}
 
 	/* ---- Read the request and respond ------------------------------- */
 
@@ -40,19 +31,35 @@ receive:
 	char *header = malloc(517);
 
 	/* Check if user didn't send any data and disconnect it */
-	get_message(cli_conn, &header, 0); /* Read request */
-	if (strlen(header) == 0) {
+	int mess_len = get_message(cli_conn, &header, 0); /* Read request */
+	if (mess_len < 1) {
 		puts("\tUser timed out or disconnected.");
 		free(header);
 		return 0;
 	}
 
 	puts("received data:");
-	for (int i = 0; i < 517; i++) {
+	for (int i = 0; i < mess_len; i++) {
 		putchar(header[i]);
 	}
 	puts("");
+
+	/* ---- Check for an SSL/TLS handshake ----------------------------- */
+
+	puts("trying to parse tls");
+	struct tlsSession session;
+	int tls = do_tls_handshake(cli_conn, (unsigned char *)header, &session);
+	switch (tls) {
+	case 0:
+		puts("not in a TLS session");
+		break;
+	default:
+		puts("Error during TLS negotiation");
+		free(header);
+		return tls;
+	}
 	sleep(3);
+
 	/* Populate our struct with request */
 	if (parse_request(header, &req) < 0) {
 		/* Bad request received */
