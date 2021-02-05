@@ -20,7 +20,7 @@
 
 /* Global variables with default values */
 short PORT = 5000;
-char *PATH = "webpages/";
+char *PATH = "";
 
 /* Opens a TCP socket at the desired port and listens to connections */
 int main(int argc, char *argv[])

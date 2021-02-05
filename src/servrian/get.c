@@ -54,6 +54,7 @@ prepend:
 	/* Read file and create response ----------------------------------- */
 
 	/* Open the file for reading */
+	printf("seving file %s\n", res.path);
 	FILE *page_file = fopen(res.path, "rb");
 
 	if (page_file == NULL) {
@@ -61,6 +62,7 @@ prepend:
 		puts("\tPage not found, redirecting...");
 		res.status = 404;
 		res.path = "404.html";
+		sleep(1);
 		goto prepend;
 	}
 

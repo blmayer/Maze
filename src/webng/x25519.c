@@ -167,3 +167,17 @@ int curve25519_mult(unsigned char *a, unsigned char *out)
 
 	return 1;
 }
+
+void i32_add(unsigned char *a, unsigned char *b, unsigned char *out)
+{
+	int carry = 0;
+	int sum = 0;
+	for (int i = 0; i < 32; i++) {
+		sum = (int)a[i] + (int)b[i] + carry/128;
+		out[i] = (unsigned char)(sum % 255);
+		carry = sum - 255;
+		if (carry < 0) {
+			carry = 0;
+		}
+	}
+}

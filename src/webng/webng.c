@@ -82,7 +82,7 @@ inline int get_ready_bytes(int conn)
 
 int get_message(int conn, char **buffer, int buff_start)
 {
-	int ready_bytes = get_ready_bytes(conn); // This blocks for 5 sec
+	int ready_bytes = get_ready_bytes(conn); // This blocks for 5 sec max
 	*buffer = realloc(*buffer, buff_start + ready_bytes);
 
 	return read(conn, *buffer + buff_start, ready_bytes);

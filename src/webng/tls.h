@@ -38,6 +38,8 @@ int generate_server_keys(struct tlsSession *session);
 
 int curve25519_mult(unsigned char *a, unsigned char *out);
 
+int i32_add(unsigned char *a, unsigned char *b, unsigned char *out);
+
 int send_alert_message(int conn, int mess_code);
 
 int send_server_hello(int conn, struct tlsSession *session);
