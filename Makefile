@@ -11,7 +11,7 @@ else
 endif
 
 # Targets
-.PHONY: all tests install clean randomstr webng servrian maze
+.PHONY: all tests install clean randomstr webng maze
 
 all: randomstr webng maze servrian 
 
@@ -24,9 +24,6 @@ webng:
 key: randomstr
 	./src/randomstr/randomstr >> .KEY
 
-servrian: randomstr webng
-	$(MAKE) -C src/servrian
-
 maze: randomstr webng
 	$(MAKE) -C src/maze
 
@@ -34,7 +31,6 @@ install:
 	cp src/randomstr/randomstr /usr/local/bin
 	cp src/webng/libwebng.$(EXT) /usr/local/lib
 	cp src/webng/webng.h /usr/local/include
-	cp src/servrian/servrian /usr/local/bin
 	cp src/maze/maze /usr/local/bin
 
 tests: webng
