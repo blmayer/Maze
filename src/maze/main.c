@@ -83,6 +83,60 @@ int main(int argc, char *argv[])
 		req.host = host->ai_canonname;
 	}
 
+	/* Check if this is HTTPS */
+	struct tlsSession session;
+	memset(&session, 0, sizeof(session));
+
+	if ((url.proto && strcmp(url.proto, "https") == 0) ||
+	    (url.port && strcmp(url.port, "443") == 0)) {
+		/*
+		 * Learning pin: prefer server_rsa.crt, else server.crt.
+		 * Pinning blocks a random MITM cert. Without a pin file we
+		 * still check CertificateVerify against the on-wire cert.
+		 */
+		if (access("server_rsa.crt", R_OK) == 0) {
+			if (load_certificate("server_rsa.crt", &session) < 0)
+				puts("Warning: could not load server_rsa.crt");
+		} else if (access("server.crt", R_OK) == 0) {
+			if (load_certificate("server.crt", &session) < 0)
+				puts("Warning: could not load server.crt pin");
+		} else {
+			puts("No cert pin — peer cert accepted if "
+			     "CertificateVerify is valid");
+		}
+
+		puts("Performing TLS handshake...");
+		if (do_client_handshake(server, &session, url.domain) < 0) {
+			puts("TLS handshake failed");
+			close(server);
+			return -1;
+		}
+		puts("TLS handshake complete, sending request...");
+
+		/* Build and send the GET request over TLS */
+		req.user = "Maze/" VERSION;
+		req.cenc = "*/*";
+		char request_buf[req_header_len(req)];
+		create_req_header(req, request_buf);
+		tls_write(server, &session,
+			  (unsigned char *)request_buf,
+			  strlen(request_buf));
+		puts("GET request sent over TLS.");
+
+		/* Read the response over TLS */
+		char *tls_resp = malloc(16384);
+		int resp_len = tls_read(server, &session,
+					(unsigned char *)tls_resp, 16383);
+		if (resp_len <= 0) {
+			puts("Failed to read TLS response");
+			free(tls_resp);
+			close(server);
+			return -1;
+		}
+		tls_resp[resp_len] = 0;
+		printf("Received %d bytes\n%s\n", resp_len, tls_resp);
+		free(tls_resp);
+	} else {
 	/* Send a not yet encrypted GET request */
 	send_get(server, req);
 
@@ -133,9 +187,10 @@ int main(int argc, char *argv[])
 	}
 
 	printf("Body:\n%s\n", res.body);
-	close(server);
 	free(res.body);
 	free(response);
+	} /* end plain HTTP */
 
+	close(server);
 	return 0;
 }

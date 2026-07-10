@@ -350,24 +350,42 @@ short parse_key_share_ext(unsigned char **msg, struct tlsSession *session)
 	ext_len += *(*msg)++;
 	printf("key share extension len: %d\n", ext_len + 2);
 
+	/* Always advance past the whole extension body (bounds-safe) */
+	unsigned char *body = *msg;
+	unsigned char *end = body + ext_len;
+	*msg = end;
+
+	if (ext_len < 8) {
+		puts("key share extension too short");
+		return ext_len + 2;
+	}
+
 	/* Size of key share */
-	short key_share_len = *(*msg)++ << 8;
-	key_share_len += *(*msg)++;
+	short key_share_len = (body[0] << 8) | body[1];
 	printf("key share len: %d\n", key_share_len);
 
 	/* Curve type */
-	printf("%02x ", *(*msg)++);
-	printf("%02x\n", *(*msg)++);
+	printf("%02x ", body[2]);
+	printf("%02x\n", body[3]);
 
 	/* Size of key */
-	short key_len = *(*msg)++ << 8;
-	key_len += *(*msg)++;
+	short key_len = (body[4] << 8) | body[5];
 	printf("key len: %d\n", key_len);
 
+	/*
+	 * X25519 public keys are always 32 bytes. Refuse anything else
+	 * so a hostile ClientHello cannot smash past cli_public[32].
+	 */
+	if (key_len != 32 || body + 6 + 32 > end) {
+		printf("Rejecting key_share with length %d (want 32)\n",
+		       key_len);
+		return ext_len + 2;
+	}
+
 	/* Save the key */
-	for (int i = 0; i < key_len; i++) {
-		session->cli_public[i] = *(*msg)++;
-		printf("%02x ", **msg);
+	for (int i = 0; i < 32; i++) {
+		session->cli_public[i] = body[6 + i];
+		printf("%02x ", session->cli_public[i]);
 	}
 	puts("");
 
@@ -462,4 +480,148 @@ int write_supported_versions_ext(unsigned char *buff)
 	return 6;
 }
 
-// int write_master_secret_ext(unsigned char *buff) {}
+/* ---- Client-side extension builders --------------------------------- */
+
+int build_server_name_ext(unsigned char *buf, const char *hostname)
+{
+	int name_len = strlen(hostname);
+	int list_len = name_len + 3; /* type(1) + len(2) + name */
+	int ext_len = list_len + 2;  /* list_len(2) + list */
+	int pos = 0;
+
+	/* Extension type: SNI = 0x0000 */
+	buf[pos++] = 0x00; buf[pos++] = 0x00;
+	/* Extension data length */
+	buf[pos++] = (ext_len >> 8) & 0xff;
+	buf[pos++] = ext_len & 0xff;
+	/* Server name list length */
+	buf[pos++] = (list_len >> 8) & 0xff;
+	buf[pos++] = list_len & 0xff;
+	/* Host name type = 0 */
+	buf[pos++] = 0x00;
+	/* Host name length */
+	buf[pos++] = (name_len >> 8) & 0xff;
+	buf[pos++] = name_len & 0xff;
+	/* Host name */
+	memcpy(&buf[pos], hostname, name_len);
+	pos += name_len;
+
+	return pos;
+}
+
+int build_supported_groups_ext(unsigned char *buf)
+{
+	int pos = 0;
+	/* Extension type: supported_groups = 0x000a */
+	buf[pos++] = 0x00; buf[pos++] = 0x0a;
+	/* Length: 4 bytes */
+	buf[pos++] = 0x00; buf[pos++] = 0x04;
+	/* Groups list length: 2 */
+	buf[pos++] = 0x00; buf[pos++] = 0x02;
+	/* x25519 = 0x001d */
+	buf[pos++] = 0x00; buf[pos++] = 0x1d;
+	return pos;
+}
+
+int build_signature_algorithms_ext(unsigned char *buf)
+{
+	int pos = 0;
+	/* Extension type: signature_algorithms = 0x000d */
+	buf[pos++] = 0x00; buf[pos++] = 0x0d;
+	/* Length: 2 + list (we advertise two schemes) */
+	buf[pos++] = 0x00; buf[pos++] = 0x06;
+	/* Algorithms list length: 4 (two schemes × 2 bytes) */
+	buf[pos++] = 0x00; buf[pos++] = 0x04;
+	/* rsa_pss_rsae_sha256 = 0x0804 (TLS 1.3 RSA certs) */
+	buf[pos++] = 0x08; buf[pos++] = 0x04;
+	/* ed25519 = 0x0807 */
+	buf[pos++] = 0x08; buf[pos++] = 0x07;
+	return pos;
+}
+
+int build_supported_versions_ext(unsigned char *buf)
+{
+	int pos = 0;
+	/* Extension type: supported_versions = 0x002b */
+	buf[pos++] = 0x00; buf[pos++] = 0x2b;
+	/* Length: 3 */
+	buf[pos++] = 0x00; buf[pos++] = 0x03;
+	/* Versions list length: 2 */
+	buf[pos++] = 0x02;
+	/* TLS 1.3 = 0x0304 */
+	buf[pos++] = 0x03; buf[pos++] = 0x04;
+	return pos;
+}
+
+int build_key_share_ext(unsigned char *buf, struct tlsSession *s)
+{
+	int pos = 0;
+	/* Extension type: key_share = 0x0033 */
+	buf[pos++] = 0x00; buf[pos++] = 0x33;
+	/* Extension data length: 38 (2+2+2+32) */
+	buf[pos++] = 0x00; buf[pos++] = 0x26;
+	/* Client key shares length: 36 */
+	buf[pos++] = 0x00; buf[pos++] = 0x24;
+	/* x25519 group */
+	buf[pos++] = 0x00; buf[pos++] = 0x1d;
+	/* Key length */
+	buf[pos++] = 0x00; buf[pos++] = 0x20;
+	/* Public key */
+	memcpy(&buf[pos], s->cli_public, 32);
+	pos += 32;
+	return pos;
+}
+
+int build_client_hello(unsigned char *buf, struct tlsSession *s,
+		       const char *host)
+{
+	int pos = 0;
+
+	/* Handshake type: ClientHello = 1 */
+	buf[pos++] = 0x01;
+	/* Length placeholder (fill later) */
+	int len_pos = pos;
+	pos += 3;
+
+	/* Client version: legacy 0x0303 (TLS 1.2) */
+	buf[pos++] = 0x03; buf[pos++] = 0x03;
+
+	/* Client random */
+	memcpy(&buf[pos], s->cli_random, 32);
+	pos += 32;
+
+	/* Session ID */
+	buf[pos++] = s->id_len;
+	memcpy(&buf[pos], s->id, s->id_len);
+	pos += s->id_len;
+
+	/* Cipher suites: length = 2, just TLS_AES_128_GCM_SHA256 */
+	buf[pos++] = 0x00; buf[pos++] = 0x02;
+	buf[pos++] = 0x13; buf[pos++] = 0x01;
+
+	/* Compression methods: 1 byte, value 0 */
+	buf[pos++] = 0x01; buf[pos++] = 0x00;
+
+	/* Extensions */
+	int ext_start = pos;
+	pos += 2; /* extensions length placeholder */
+
+	pos += build_server_name_ext(&buf[pos], host);
+	pos += build_supported_groups_ext(&buf[pos]);
+	pos += build_signature_algorithms_ext(&buf[pos]);
+	pos += build_supported_versions_ext(&buf[pos]);
+	pos += build_key_share_ext(&buf[pos], s);
+
+	/* Fill extension length */
+	int ext_len = pos - ext_start - 2;
+	buf[ext_start] = (ext_len >> 8) & 0xff;
+	buf[ext_start + 1] = ext_len & 0xff;
+
+	/* Fill handshake length */
+	int hs_len = pos - 4;
+	buf[len_pos] = (hs_len >> 16) & 0xff;
+	buf[len_pos + 1] = (hs_len >> 8) & 0xff;
+	buf[len_pos + 2] = hs_len & 0xff;
+
+	return pos;
+}

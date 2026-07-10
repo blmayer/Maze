@@ -21,6 +21,8 @@
 /* Global variables with default values */
 short PORT = 5000;
 char *PATH = "";
+char *CERT_PATH = NULL;
+char *KEY_PATH = NULL;
 
 /* Opens a TCP socket at the desired port and listens to connections */
 int main(int argc, char *argv[])
@@ -77,6 +79,23 @@ int main(int argc, char *argv[])
 				/* Not enough arguments */
 				puts("Not enough arguments.");
 				return -1;
+			}
+			break;
+
+		default:
+			/* Handle cert and key arguments */
+			if (strcmp(argv[arg], "-c") == 0 ||
+			    strcmp(argv[arg], "--cert") == 0) {
+				if (argv[arg + 1] != NULL) {
+					CERT_PATH = argv[arg + 1];
+					arg++;
+				}
+			} else if (strcmp(argv[arg], "-k") == 0 ||
+				   strcmp(argv[arg], "--key") == 0) {
+				if (argv[arg + 1] != NULL) {
+					KEY_PATH = argv[arg + 1];
+					arg++;
+				}
 			}
 		}
 	}
