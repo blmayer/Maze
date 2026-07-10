@@ -307,22 +307,25 @@ short req_header_len(struct request req)
 		header_size += digits + 18;	    /* Number of digits */
 		header_size += 14 + strlen(req.ctype); /* Content Encoding */
 	}
-	return header_size + 1; /* Terminating zero */
+	/* Final blank line \r\n + terminating zero */
+	return header_size + 2 + 1;
 }
 
 short create_req_header(struct request req, char *dest)
 {
-	/* Copy all parameters to it */
+	const char *path = (req.url && req.url[0]) ? req.url : "/";
+
+	/* Required request lines */
 	sprintf(dest,
 		"%s %s HTTP/%.1f\r\n"
 		"Host: %s\r\n"
 		"User-Agent: %s\r\n"
 		"Connection: %s\r\n"
 		"Accept: %s\r\n",
-		req.type, req.url, req.vers, req.host, req.user, req.conn,
+		req.type, path, req.vers, req.host, req.user, req.conn,
 		req.cenc);
 
-	/* Optional lines */
+	/* Optional lines, then blank line terminator */
 	if (req.auth != NULL) {
 		sprintf(dest + strlen(dest), "Authorization: %s\r\n", req.auth);
 	}
@@ -332,6 +335,7 @@ short create_req_header(struct request req, char *dest)
 			"Content-Length: %d\r\n",
 			req.ctype, req.clen);
 	}
+	strcat(dest, "\r\n");
 
 	return 0;
 }
